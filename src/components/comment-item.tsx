@@ -7,6 +7,7 @@ import { formatRelativeTime, initialsFromName } from "@/lib/utils"
 import { useAppStore } from "@/lib/store"
 import { useCurrentUser, useDeleteComment } from "@/lib/api"
 import type { Comment } from "@/lib/api"
+import { useT } from "@/lib/i18n"
 import { toast } from "sonner"
 
 interface CommentItemProps {
@@ -18,6 +19,7 @@ export function CommentItem({ comment, photoId }: CommentItemProps) {
   const setView = useAppStore((s) => s.setView)
   const { data: currentUser } = useCurrentUser()
   const del = useDeleteComment()
+  const t = useT()
 
   const isMine = currentUser?.id === comment.author.id
 
@@ -25,7 +27,7 @@ export function CommentItem({ comment, photoId }: CommentItemProps) {
     del.mutate(
       { commentId: comment.id, photoId },
       {
-        onSuccess: () => toast.success("Comment deleted"),
+        onSuccess: () => toast.success(t("toast.commentDeleted")),
         onError: (err) => toast.error(err.message),
       }
     )
@@ -63,7 +65,7 @@ export function CommentItem({ comment, photoId }: CommentItemProps) {
               size="icon"
               className="h-6 w-6 ml-auto opacity-0 group-hover:opacity-100 transition-opacity"
               onClick={handleDelete}
-              aria-label="Delete comment"
+              aria-label={t("photo.deleteComment")}
             >
               <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-rose-500" />
             </Button>

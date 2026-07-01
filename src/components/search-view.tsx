@@ -8,6 +8,7 @@ import { PhotoCard, PhotoCardSkeleton } from "@/components/photo-card"
 import { EmptyState } from "@/components/empty-state"
 import { usePhotosInfinite } from "@/lib/api"
 import { useAppStore } from "@/lib/store"
+import { useT } from "@/lib/i18n"
 
 export function SearchView() {
   const query = useAppStore((s) =>
@@ -15,6 +16,7 @@ export function SearchView() {
   )
   const goBack = useAppStore((s) => s.goBack)
   const setView = useAppStore((s) => s.setView)
+  const t = useT()
 
   const params = useMemo(
     () => ({ search: query, sort: "newest" as const }),
@@ -30,15 +32,15 @@ export function SearchView() {
       className="max-w-7xl mx-auto space-y-6"
     >
       <Button variant="ghost" size="sm" onClick={goBack} className="gap-1.5">
-        <ArrowLeft className="h-4 w-4" /> Back
+        <ArrowLeft className="h-4 w-4" /> {t("photo.back")}
       </Button>
 
       <div>
         <h1 className="text-2xl font-bold">
-          Search results
+          {t("search.results")}
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          for <span className="text-rose-400 font-medium">&quot;{query}&quot;</span> — matching photos, tags, and photographers
+          for <span className="text-rose-400 font-medium">&quot;{query}&quot;</span> — {t("search.resultsDesc")}
         </p>
       </div>
 
@@ -53,11 +55,11 @@ export function SearchView() {
       {!photosQuery.isLoading && photos.length === 0 && (
         <EmptyState
           icon={SearchX}
-          title="No matches found"
-          description={`We couldn't find anything for "${query}". Try a different keyword, like a tag name or photographer handle.`}
+          title={t("search.empty")}
+          description={t("search.noMatchesDesc", { query })}
           action={
             <Button variant="outline" onClick={() => setView({ name: "home" })}>
-              Back to discover
+              {t("search.backToDiscover")}
             </Button>
           }
         />
@@ -78,7 +80,7 @@ export function SearchView() {
             onClick={() => photosQuery.fetchNextPage()}
             disabled={photosQuery.isFetchingNextPage}
           >
-            {photosQuery.isFetchingNextPage ? "Loading…" : "Load more"}
+            {photosQuery.isFetchingNextPage ? t("common.loading") : t("feed.loadMore")}
           </Button>
         </div>
       )}

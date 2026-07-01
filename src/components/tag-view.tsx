@@ -11,6 +11,7 @@ import { usePhotosInfinite, usePopularTags } from "@/lib/api"
 import { useAppStore } from "@/lib/store"
 import { useState } from "react"
 import { TagBadge } from "@/components/tag-badge"
+import { useT } from "@/lib/i18n"
 
 export function TagView() {
   const tagName = useAppStore((s) =>
@@ -19,6 +20,7 @@ export function TagView() {
   const goBack = useAppStore((s) => s.goBack)
   const setView = useAppStore((s) => s.setView)
   const [sort, setSort] = useState<"newest" | "popular">("newest")
+  const t = useT()
 
   const params = useMemo(
     () => ({ tag: tagName, sort }),
@@ -39,7 +41,7 @@ export function TagView() {
       className="max-w-7xl mx-auto space-y-6"
     >
       <Button variant="ghost" size="sm" onClick={goBack} className="gap-1.5">
-        <ArrowLeft className="h-4 w-4" /> Back
+        <ArrowLeft className="h-4 w-4" /> {t("photo.back")}
       </Button>
 
       <div className="flex items-center gap-3">
@@ -50,8 +52,8 @@ export function TagView() {
           <h1 className="text-2xl font-bold">{tagName}</h1>
           <p className="text-sm text-muted-foreground">
             {photosQuery.data?.pages[0]?.items.length
-              ? "Photos tagged with this name"
-              : "Tag"}
+              ? t("tag.photosTagged")
+              : t("tag.tagLabel")}
           </p>
         </div>
       </div>
@@ -60,10 +62,10 @@ export function TagView() {
       {relatedTags.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           <span className="text-xs text-muted-foreground self-center mr-1">
-            Related:
+            {t("tag.related")}
           </span>
-          {relatedTags.map((t) => (
-            <TagBadge key={t.id} name={t.name} variant="secondary" />
+          {relatedTags.map((rt) => (
+            <TagBadge key={rt.id} name={rt.name} variant="secondary" />
           ))}
         </div>
       )}
@@ -73,10 +75,10 @@ export function TagView() {
         <Tabs value={sort} onValueChange={(v) => setSort(v as "newest" | "popular")}>
           <TabsList>
             <TabsTrigger value="newest" className="gap-1.5">
-              <Clock className="h-3.5 w-3.5" /> Newest
+              <Clock className="h-3.5 w-3.5" /> {t("feed.newest")}
             </TabsTrigger>
             <TabsTrigger value="popular" className="gap-1.5">
-              <Flame className="h-3.5 w-3.5" /> Popular
+              <Flame className="h-3.5 w-3.5" /> {t("feed.popular")}
             </TabsTrigger>
           </TabsList>
         </Tabs>
@@ -93,11 +95,11 @@ export function TagView() {
       {!photosQuery.isLoading && photos.length === 0 && (
         <EmptyState
           icon={Hash}
-          title="No photos with this tag"
-          description={`There aren't any photos tagged "${tagName}" yet.`}
+          title={t("tag.empty")}
+          description={t("tag.emptyDesc", { tag: tagName })}
           action={
             <Button variant="outline" onClick={() => setView({ name: "home" })}>
-              Back to discover
+              {t("tag.backToDiscover")}
             </Button>
           }
         />
@@ -118,7 +120,7 @@ export function TagView() {
             onClick={() => photosQuery.fetchNextPage()}
             disabled={photosQuery.isFetchingNextPage}
           >
-            {photosQuery.isFetchingNextPage ? "Loading…" : "Load more"}
+            {photosQuery.isFetchingNextPage ? t("common.loading") : t("feed.loadMore")}
           </Button>
         </div>
       )}

@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import { cn, formatCount } from "@/lib/utils"
 import { useToggleLike, useCurrentUser } from "@/lib/api"
 import { useAppStore } from "@/lib/store"
+import { useT } from "@/lib/i18n"
 import { toast } from "sonner"
 
 interface LikeButtonProps {
@@ -27,6 +28,7 @@ export function LikeButton({
   const toggle = useToggleLike()
   const { data: currentUser } = useCurrentUser()
   const openAuth = useAppStore((s) => s.openAuth)
+  const t = useT()
 
   const sizeCls =
     size === "sm" ? "h-4 w-4" : size === "lg" ? "h-6 w-6" : "h-5 w-5"
@@ -36,7 +38,7 @@ export function LikeButton({
     e.stopPropagation()
     if (!currentUser) {
       openAuth("login")
-      toast.info("Sign in to like photos")
+      toast.info(t("toast.signInToLike"))
       return
     }
     toggle.mutate({ photoId })
@@ -46,7 +48,7 @@ export function LikeButton({
     <button
       type="button"
       onClick={handleClick}
-      aria-label={liked ? "Unlike photo" : "Like photo"}
+      aria-label={liked ? t("photo.unlikeAria") : t("photo.likeAria")}
       aria-pressed={liked}
       className={cn(
         "group inline-flex items-center gap-1.5 text-sm font-medium transition-colors",

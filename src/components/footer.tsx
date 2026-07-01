@@ -2,9 +2,11 @@
 
 import { Aperture, Github, Twitter, Instagram } from "lucide-react"
 import { useAppStore } from "@/lib/store"
+import { useT } from "@/lib/i18n"
 
 export function Footer() {
   const setView = useAppStore((s) => s.setView)
+  const t = useT()
 
   return (
     <footer className="mt-auto border-t border-border/60 bg-background/80 backdrop-blur">
@@ -16,7 +18,7 @@ export function Footer() {
             </span>
             <span className="font-semibold">Aperture</span>
             <span className="text-muted-foreground hidden sm:inline">
-              — Where photographers come alive
+              — {t("footer.tagline")}
             </span>
           </div>
 
@@ -25,13 +27,13 @@ export function Footer() {
               onClick={() => setView({ name: "home" })}
               className="hover:text-foreground transition-colors"
             >
-              Home
+              {t("footer.home")}
             </button>
             <button
               onClick={() => setView({ name: "tag", tagName: "landscape" })}
               className="hover:text-foreground transition-colors"
             >
-              Popular tags
+              {t("footer.popularTags")}
             </button>
             <a
               href="https://github.com"
@@ -39,7 +41,7 @@ export function Footer() {
               rel="noreferrer noopener"
               className="hover:text-foreground transition-colors"
             >
-              About
+              {t("footer.about")}
             </a>
           </nav>
 
@@ -57,7 +59,7 @@ export function Footer() {
         </div>
 
         <div className="mt-6 text-center text-xs text-muted-foreground">
-          © 2026 Aperture · Where photographers come alive.
+          {t("footer.copyright")}
         </div>
       </div>
     </footer>

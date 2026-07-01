@@ -6,13 +6,16 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAppStore } from "@/lib/store"
 import { UserMenu } from "@/components/user-menu"
+import { LanguageSwitcher } from "@/components/language-switcher"
 import { useCurrentUser } from "@/lib/api"
+import { useT } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
 export function Header() {
   const setView = useAppStore((s) => s.setView)
   const openAuth = useAppStore((s) => s.openAuth)
   const { data: currentUser } = useCurrentUser()
+  const t = useT()
   const [query, setQuery] = useState("")
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -72,7 +75,7 @@ export function Header() {
           <Search className="absolute left-3 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             type="text"
-            placeholder="Search photos, tags, or photographers…"
+            placeholder={t("header.searchPlaceholder")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="pl-9 pr-3 h-10 bg-muted/60 border-border/60 focus-visible:bg-background focus-visible:border-rose-500/50"
@@ -101,8 +104,10 @@ export function Header() {
             className="bg-rose-600 hover:bg-rose-700 text-white border-rose-600 gap-1.5"
           >
             <Upload className="h-4 w-4" />
-            <span className="hidden sm:inline">Upload</span>
+            <span className="hidden sm:inline">{t("header.upload")}</span>
           </Button>
+
+          <LanguageSwitcher />
 
           <UserMenu />
         </div>
@@ -120,7 +125,7 @@ export function Header() {
           <Input
             ref={inputRef}
             type="text"
-            placeholder="Search photos, tags, photographers…"
+            placeholder={t("header.searchPlaceholder")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="pl-9 h-10 bg-muted/60"

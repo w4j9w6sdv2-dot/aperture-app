@@ -16,16 +16,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Aperture — Where photographers come alive",
+  title: "Aperture — Dove i fotografi prendono vita",
   description:
-    "Aperture is a community for photographers to share their work, discover inspiring photos, follow creators, and engage through likes and comments. Where photographers come alive.",
+    "Aperture \u00e8 una community per fotografi per condividere il loro lavoro, scoprire foto inspiranti, seguire creatori e interagire tramite like e commenti. Dove i fotografi prendono vita.",
   keywords: [
-    "photography",
+    "fotografia",
     "Aperture",
-    "photo community",
-    "professional photography",
-    "discover photos",
-    "photographers",
+    "community fotografica",
+    "fotografia professionale",
+    "scopri foto",
+    "fotografi",
   ],
   authors: [{ name: "Aperture" }],
   icons: {
@@ -39,7 +39,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="it" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >

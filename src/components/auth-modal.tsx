@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { useAppStore } from "@/lib/store"
 import { useLogin, useRegister } from "@/lib/api"
+import { useT } from "@/lib/i18n"
 import { toast } from "sonner"
 
 export function AuthModal() {
@@ -34,12 +35,13 @@ export function AuthModal() {
   })
   const loginMut = useLogin()
   const registerMut = useRegister()
+  const t = useT()
 
   const onLogin = (e: React.FormEvent) => {
     e.preventDefault()
     loginMut.mutate(loginForm, {
       onSuccess: () => {
-        toast.success("Welcome back!")
+        toast.success(t("toast.welcomeBack"))
         closeAuth()
         setLoginForm({ email: "", password: "" })
       },
@@ -56,12 +58,12 @@ export function AuthModal() {
           { email: signupForm.email, password: signupForm.password },
           {
             onSuccess: () => {
-              toast.success("Account created — welcome to Aperture!")
+              toast.success(t("toast.welcome"))
               closeAuth()
               setSignupForm({ username: "", email: "", password: "" })
             },
             onError: (err) =>
-              toast.error("Account created, but sign-in failed: " + err.message),
+              toast.error(t("toast.signupFailed", { error: err.message })),
           }
         )
       },
@@ -81,7 +83,7 @@ export function AuthModal() {
             <DialogTitle className="text-xl">Aperture</DialogTitle>
           </div>
           <DialogDescription className="text-muted-foreground">
-            Join a community where photographers come alive.
+            {t("auth.subtitle")}
           </DialogDescription>
         </DialogHeader>
 
@@ -91,8 +93,8 @@ export function AuthModal() {
           className="px-6 pb-6"
         >
           <TabsList className="grid w-full grid-cols-2 mb-4">
-            <TabsTrigger value="login">Log in</TabsTrigger>
-            <TabsTrigger value="signup">Sign up</TabsTrigger>
+            <TabsTrigger value="login">{t("header.login")}</TabsTrigger>
+            <TabsTrigger value="signup">{t("header.signup")}</TabsTrigger>
           </TabsList>
 
           <AnimatePresence mode="wait">
@@ -107,7 +109,7 @@ export function AuthModal() {
                   className="space-y-3"
                 >
                   <div className="space-y-1.5">
-                    <Label htmlFor="login-email">Email</Label>
+                    <Label htmlFor="login-email">{t("auth.email")}</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -120,12 +122,12 @@ export function AuthModal() {
                           setLoginForm((f) => ({ ...f, email: e.target.value }))
                         }
                         className="pl-9"
-                        placeholder="you@example.com"
+                        placeholder={t("auth.emailPlaceholder")}
                       />
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="login-password">Password</Label>
+                    <Label htmlFor="login-password">{t("auth.password")}</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -138,7 +140,7 @@ export function AuthModal() {
                           setLoginForm((f) => ({ ...f, password: e.target.value }))
                         }
                         className="pl-9"
-                        placeholder="••••••••"
+                        placeholder={t("auth.passwordPlaceholder")}
                       />
                     </div>
                   </div>
@@ -150,13 +152,13 @@ export function AuthModal() {
                     {loginMut.isPending ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      "Log in"
+                      t("auth.loginSubmit")
                     )}
                   </Button>
                   <p className="text-xs text-center text-muted-foreground pt-2">
-                    Try the demo account:
+                    {t("auth.demoHintText")}
                     <br />
-                    <code className="text-rose-400">mara_lens@demo.com</code> · password{" "}
+                    <code className="text-rose-400">mara_lens@demo.com</code> · {t("auth.demoPassword")}{" "}
                     <code className="text-rose-400">password123</code>
                   </p>
                 </motion.form>
@@ -172,7 +174,7 @@ export function AuthModal() {
                   className="space-y-3"
                 >
                   <div className="space-y-1.5">
-                    <Label htmlFor="signup-username">Username</Label>
+                    <Label htmlFor="signup-username">{t("auth.username")}</Label>
                     <div className="relative">
                       <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -187,12 +189,12 @@ export function AuthModal() {
                           setSignupForm((f) => ({ ...f, username: e.target.value }))
                         }
                         className="pl-9"
-                        placeholder="yourname"
+                        placeholder={t("auth.usernamePlaceholder")}
                       />
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="signup-email">Email</Label>
+                    <Label htmlFor="signup-email">{t("auth.email")}</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -205,12 +207,12 @@ export function AuthModal() {
                           setSignupForm((f) => ({ ...f, email: e.target.value }))
                         }
                         className="pl-9"
-                        placeholder="you@example.com"
+                        placeholder={t("auth.emailPlaceholder")}
                       />
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="signup-password">Password</Label>
+                    <Label htmlFor="signup-password">{t("auth.password")}</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -224,7 +226,7 @@ export function AuthModal() {
                           setSignupForm((f) => ({ ...f, password: e.target.value }))
                         }
                         className="pl-9"
-                        placeholder="At least 6 characters"
+                        placeholder={t("auth.passwordMinLength")}
                       />
                     </div>
                   </div>
@@ -236,7 +238,7 @@ export function AuthModal() {
                     {registerMut.isPending || loginMut.isPending ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      "Create account"
+                      t("auth.signupSubmit")
                     )}
                   </Button>
                 </motion.form>

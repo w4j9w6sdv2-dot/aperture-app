@@ -32,6 +32,7 @@ import {
   formatCount,
   initialsFromName,
 } from "@/lib/utils"
+import { useT } from "@/lib/i18n"
 import { toast } from "sonner"
 import { useState } from "react"
 
@@ -48,6 +49,7 @@ export function PhotoDetailView() {
   const [commentBody, setCommentBody] = useState("")
   const createComment = useCreateComment()
   const deletePhoto = useDeletePhoto()
+  const t = useT()
 
   const commentListRef = useRef<HTMLDivElement>(null)
 
@@ -60,7 +62,7 @@ export function PhotoDetailView() {
     return (
       <div className="max-w-5xl mx-auto space-y-4">
         <Button variant="ghost" size="sm" onClick={goBack} className="gap-1.5">
-          <ArrowLeft className="h-4 w-4" /> Back
+          <ArrowLeft className="h-4 w-4" /> {t("photo.back")}
         </Button>
         <Skeleton className="w-full aspect-[3/2]" />
         <div className="space-y-3">
@@ -76,10 +78,10 @@ export function PhotoDetailView() {
     return (
       <EmptyState
         icon={ArrowLeft}
-        title="Photo not found"
-        description="This photo may have been deleted or is no longer available."
+        title={t("photo.notFound")}
+        description={t("photo.notFoundDesc")}
         action={
-          <Button onClick={() => setView({ name: "home" })}>Back to home</Button>
+          <Button onClick={() => setView({ name: "home" })}>{t("photo.backToHome")}</Button>
         }
       />
     )
@@ -100,7 +102,7 @@ export function PhotoDetailView() {
       {
         onSuccess: () => {
           setCommentBody("")
-          toast.success("Comment added")
+          toast.success(t("toast.commentAdded"))
           // scroll to bottom of comments
           setTimeout(() => {
             commentListRef.current?.scrollTo({
@@ -115,10 +117,10 @@ export function PhotoDetailView() {
   }
 
   const onDeletePhoto = () => {
-    if (!confirm("Delete this photo? This cannot be undone.")) return
+    if (!confirm(t("photo.deleteConfirm"))) return
     deletePhoto.mutate(photo.id, {
       onSuccess: () => {
-        toast.success("Photo deleted")
+        toast.success(t("toast.photoDeleted"))
         setView({ name: "home" })
       },
       onError: (err) => toast.error(err.message),
@@ -132,7 +134,7 @@ export function PhotoDetailView() {
       className="max-w-6xl mx-auto space-y-4"
     >
       <Button variant="ghost" size="sm" onClick={goBack} className="gap-1.5">
-        <ArrowLeft className="h-4 w-4" /> Back
+        <ArrowLeft className="h-4 w-4" /> {t("photo.back")}
       </Button>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-6">
@@ -168,7 +170,7 @@ export function PhotoDetailView() {
                 {photo.author.username}
               </button>
               <p className="text-xs text-muted-foreground">
-                Published {formatRelativeTime(photo.createdAt)}
+                {t("photo.publishedAt", { time: formatRelativeTime(photo.createdAt) })}
               </p>
             </div>
             {!isAuthor && (
@@ -193,7 +195,7 @@ export function PhotoDetailView() {
                   size="icon"
                   className="shrink-0 text-muted-foreground hover:text-rose-500"
                   onClick={onDeletePhoto}
-                  aria-label="Delete photo"
+                  aria-label={t("photo.deletePhotoAria")}
                   disabled={deletePhoto.isPending}
                 >
                   <Trash2 className="h-4 w-4" />
@@ -271,8 +273,8 @@ export function PhotoDetailView() {
           {/* Tags */}
           {photo.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
-              {photo.tags.map((t) => (
-                <TagBadge key={t} name={t} showHash />
+              {photo.tags.map((tag) => (
+                <TagBadge key={tag} name={tag} showHash />
               ))}
             </div>
           )}
@@ -280,7 +282,7 @@ export function PhotoDetailView() {
           {/* Comments */}
           <div className="border-t border-border/60 pt-4">
             <h3 className="text-sm font-semibold mb-3">
-              Comments {photo.commentCount > 0 && `(${photo.commentCount})`}
+              {t("photo.comments")} {photo.commentCount > 0 && `(${photo.commentCount})`}
             </h3>
 
             <form onSubmit={onComment} className="flex gap-2 mb-4">
@@ -289,8 +291,8 @@ export function PhotoDetailView() {
                 onChange={(e) => setCommentBody(e.target.value)}
                 placeholder={
                   currentUser
-                    ? "Add a thoughtful comment…"
-                    : "Sign in to comment"
+                    ? t("photo.addComment")
+                    : t("photo.signInToComment")
                 }
                 rows={2}
                 maxLength={1000}
@@ -307,7 +309,7 @@ export function PhotoDetailView() {
                 size="icon"
                 disabled={createComment.isPending || !commentBody.trim()}
                 className="bg-rose-600 hover:bg-rose-700 text-white shrink-0"
-                aria-label="Post comment"
+                aria-label={t("photo.postCommentAria")}
               >
                 {createComment.isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -327,7 +329,7 @@ export function PhotoDetailView() {
                 ))
               ) : (
                 <p className="text-sm text-muted-foreground text-center py-6">
-                  No comments yet. Be the first!
+                  {t("photo.noComments")}
                 </p>
               )}
             </div>

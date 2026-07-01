@@ -6,6 +6,7 @@ import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { useFollow, useCurrentUser } from "@/lib/api"
 import { useAppStore } from "@/lib/store"
+import { useT } from "@/lib/i18n"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 
@@ -27,6 +28,7 @@ export function FollowButton({
   const follow = useFollow()
   const { data: currentUser } = useCurrentUser()
   const openAuth = useAppStore((s) => s.openAuth)
+  const t = useT()
 
   // useOptimistic lets us render the in-flight toggle immediately while
   // the server confirms the new state — without managing local state in
@@ -41,7 +43,7 @@ export function FollowButton({
   const handleClick = () => {
     if (!currentUser) {
       openAuth("login")
-      toast.info("Sign in to follow users")
+      toast.info(t("toast.signInToFollow"))
       return
     }
     const next = !optimisticFollowing
@@ -50,7 +52,11 @@ export function FollowButton({
       { followingId: userId },
       {
         onSuccess: (data) => {
-          toast.success(data.following ? "Followed" : "Unfollowed")
+          toast.success(
+            data.following
+              ? t("toast.followed", { user: currentUser.username })
+              : t("toast.unfollowed", { user: currentUser.username })
+          )
         },
         onError: (err) => {
           toast.error(err.message)
@@ -79,12 +85,12 @@ export function FollowButton({
         {optimisticFollowing ? (
           <>
             <UserCheck className="h-4 w-4" />
-            Following
+            {t("profile.following")}
           </>
         ) : (
           <>
             <UserPlus className="h-4 w-4" />
-            Follow
+            {t("profile.follow")}
           </>
         )}
       </Button>

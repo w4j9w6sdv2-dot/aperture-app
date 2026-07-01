@@ -14,6 +14,7 @@ import { LogOut, User as UserIcon, Image as ImageIcon, Sparkles } from "lucide-r
 import { useCurrentUser, useLogout } from "@/lib/api"
 import { useAppStore } from "@/lib/store"
 import { initialsFromName } from "@/lib/utils"
+import { useT } from "@/lib/i18n"
 import { toast } from "sonner"
 
 export function UserMenu() {
@@ -21,6 +22,7 @@ export function UserMenu() {
   const setView = useAppStore((s) => s.setView)
   const openAuth = useAppStore((s) => s.openAuth)
   const logout = useLogout()
+  const t = useT()
 
   if (!currentUser) {
     return (
@@ -31,14 +33,14 @@ export function UserMenu() {
           onClick={() => openAuth("login")}
           className="text-muted-foreground hover:text-foreground"
         >
-          Log in
+          {t("header.login")}
         </Button>
         <Button
           size="sm"
           onClick={() => openAuth("signup")}
           className="bg-white text-black hover:bg-white/90"
         >
-          Sign up
+          {t("header.signup")}
         </Button>
       </div>
     )
@@ -72,37 +74,37 @@ export function UserMenu() {
           }
         >
           <UserIcon className="mr-2 h-4 w-4" />
-          Profile
+          {t("header.profile")}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setView({ name: "upload" })}>
           <ImageIcon className="mr-2 h-4 w-4" />
-          Upload
+          {t("header.upload")}
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => {
             fetch("/api/seed", { method: "POST" })
               .then(() => {
-                toast.success("Database re-seeded")
+                toast.success(t("menu.reseedSuccess"))
                 setTimeout(() => window.location.reload(), 600)
               })
-              .catch(() => toast.error("Failed to seed"))
+              .catch(() => toast.error(t("menu.reseedError")))
           }}
         >
           <Sparkles className="mr-2 h-4 w-4" />
-          Re-seed demo data
+          {t("menu.reseed")}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() =>
             logout.mutate(undefined, {
-              onSuccess: () => toast.success("Signed out"),
+              onSuccess: () => toast.success(t("toast.loggedOut")),
               onError: (e) => toast.error(e.message),
             })
           }
           className="text-rose-500 focus:text-rose-400"
         >
           <LogOut className="mr-2 h-4 w-4" />
-          Log out
+          {t("menu.logOut")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

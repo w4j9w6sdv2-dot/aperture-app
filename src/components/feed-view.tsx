@@ -8,6 +8,7 @@ import { PhotoCard, PhotoCardSkeleton } from "@/components/photo-card"
 import { EmptyState } from "@/components/empty-state"
 import { usePhotosInfinite, useCurrentUser } from "@/lib/api"
 import { useAppStore } from "@/lib/store"
+import { useT } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
 export function FeedView() {
@@ -16,6 +17,7 @@ export function FeedView() {
   const setView = useAppStore((s) => s.setView)
   const openAuth = useAppStore((s) => s.openAuth)
   const { data: currentUser } = useCurrentUser()
+  const t = useT()
 
   // Discover tab supports a sort toggle (newest / popular).
   // Feed tab is always newest (followed users).
@@ -47,8 +49,8 @@ export function FeedView() {
           onValueChange={(v) => setTab(v as "discover" | "feed")}
         >
           <TabsList>
-            <TabsTrigger value="discover">Discover</TabsTrigger>
-            <TabsTrigger value="feed">Feed</TabsTrigger>
+            <TabsTrigger value="discover">{t("feed.discover")}</TabsTrigger>
+            <TabsTrigger value="feed">{t("feed.feed")}</TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -70,7 +72,7 @@ export function FeedView() {
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Clock className="h-3.5 w-3.5" /> Newest
+              <Clock className="h-3.5 w-3.5" /> {t("feed.newest")}
             </button>
             <button
               role="tab"
@@ -83,7 +85,7 @@ export function FeedView() {
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <TrendingUp className="h-3.5 w-3.5" /> Popular
+              <TrendingUp className="h-3.5 w-3.5" /> {t("feed.popular")}
             </button>
           </div>
         )}
@@ -93,14 +95,14 @@ export function FeedView() {
       {tab === "feed" && !currentUser && (
         <EmptyState
           icon={Flame}
-          title="Your feed is waiting"
-          description="Follow photographers to see their latest work here. Sign in to get started."
+          title={t("feed.feedWaiting")}
+          description={t("feed.feedWaitingDesc")}
           action={
             <Button
               className="bg-rose-600 hover:bg-rose-700 text-white"
               onClick={() => openAuth("login")}
             >
-              Sign in to see your feed
+              {t("feed.feedSignin")}
             </Button>
           }
         />
@@ -119,8 +121,8 @@ export function FeedView() {
       {!query.isLoading && photos.length === 0 && tab === "discover" && (
         <EmptyState
           icon={ImageOff}
-          title="No photos yet"
-          description="Be the first to share something with the community."
+          title={t("feed.emptyDiscover")}
+          description={t("feed.emptyDiscoverDesc")}
           action={
             <Button
               className="bg-rose-600 hover:bg-rose-700 text-white"
@@ -130,7 +132,7 @@ export function FeedView() {
                   : openAuth("signup")
               }
             >
-              Upload a photo
+              {t("feed.uploadAction")}
             </Button>
           }
         />
@@ -142,11 +144,11 @@ export function FeedView() {
         currentUser && (
           <EmptyState
             icon={Clock}
-            title="Nothing in your feed yet"
-            description="Head to Discover and follow some photographers to fill your feed."
+            title={t("feed.emptyFeedTitle")}
+            description={t("feed.emptyFeedDescAlt")}
             action={
               <Button variant="outline" onClick={() => setTab("discover")}>
-                Explore Discover
+                {t("feed.exploreDiscover")}
               </Button>
             }
           />
@@ -170,14 +172,14 @@ export function FeedView() {
             disabled={query.isFetchingNextPage}
             className="min-w-[180px]"
           >
-            {query.isFetchingNextPage ? "Loading…" : "Load more"}
+            {query.isFetchingNextPage ? t("common.loading") : t("feed.loadMore")}
           </Button>
         </div>
       )}
 
       {!query.hasNextPage && photos.length > 0 && (
         <div className="text-center text-xs text-muted-foreground py-6">
-          You&apos;ve reached the end.
+          {t("feed.endReached")}
         </div>
       )}
     </div>

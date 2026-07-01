@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge"
 import { useAppStore } from "@/lib/store"
 import { useCreatePhoto, useSearchTags, useCurrentUser } from "@/lib/api"
 import { fileToResizedDataUrl, cn } from "@/lib/utils"
+import { useT } from "@/lib/i18n"
 import { toast } from "sonner"
 
 export function UploadModal() {
@@ -37,6 +38,7 @@ export function UploadModal() {
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const createMut = useCreatePhoto()
+  const t = useT()
 
   const { data: tagSuggestions } = useSearchTags(tagInput)
 
@@ -57,11 +59,11 @@ export function UploadModal() {
 
   const handleFile = useCallback(async (f: File) => {
     if (!f.type.startsWith("image/")) {
-      toast.error("Please select an image file")
+      toast.error(t("upload.imageFile"))
       return
     }
     if (f.size > 25 * 1024 * 1024) {
-      toast.error("Image must be under 25 MB")
+      toast.error(t("upload.imageSize"))
       return
     }
     setFile(f)
@@ -70,12 +72,12 @@ export function UploadModal() {
       const dataUrl = await fileToResizedDataUrl(f, 1600, 0.82)
       setPreview(dataUrl)
     } catch {
-      toast.error("Failed to read image")
+      toast.error(t("upload.readFailed"))
       setFile(null)
     } finally {
       setProcessing(false)
     }
-  }, [])
+  }, [t])
 
   const onDrop = useCallback(
     (e: React.DragEvent) => {
@@ -87,19 +89,19 @@ export function UploadModal() {
     [handleFile]
   )
 
-  const addTag = (t: string) => {
-    const cleaned = t.trim().toLowerCase().replace(/^#/, "").replace(/\s+/g, "-")
+  const addTag = (tagStr: string) => {
+    const cleaned = tagStr.trim().toLowerCase().replace(/^#/, "").replace(/\s+/g, "-")
     if (!cleaned) return
     if (tags.includes(cleaned)) return
     if (tags.length >= 10) {
-      toast.warning("Maximum 10 tags")
+      toast.warning(t("upload.maxTags"))
       return
     }
     setTags((prev) => [...prev, cleaned])
     setTagInput("")
   }
 
-  const removeTag = (t: string) => setTags((prev) => prev.filter((x) => x !== t))
+  const removeTag = (tagStr: string) => setTags((prev) => prev.filter((x) => x !== tagStr))
 
   const onTagKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" || e.key === ",") {
@@ -117,11 +119,11 @@ export function UploadModal() {
       return
     }
     if (!preview) {
-      toast.error("Please select an image first")
+      toast.error(t("upload.noFile"))
       return
     }
     if (!title.trim()) {
-      toast.error("Please add a title")
+      toast.error(t("upload.titleRequired"))
       return
     }
     createMut.mutate(
@@ -133,7 +135,7 @@ export function UploadModal() {
       },
       {
         onSuccess: (photo) => {
-          toast.success("Photo uploaded!")
+          toast.success(t("upload.success"))
           reset()
           setView({ name: "photo", photoId: photo.id })
         },
@@ -150,9 +152,9 @@ export function UploadModal() {
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto scrollbar-thin p-0">
         <div className="brand-gradient h-1.5" />
         <DialogHeader className="px-6 pt-4 pb-2">
-          <DialogTitle className="text-xl">Upload a photo</DialogTitle>
+          <DialogTitle className="text-xl">{t("upload.title")}</DialogTitle>
           <DialogDescription>
-            Share your work with the community. JPEG, PNG, or WebP up to 25 MB.
+            {t("upload.subtitle")}
           </DialogDescription>
         </DialogHeader>
 
@@ -194,10 +196,10 @@ export function UploadModal() {
                 )}
                 <div>
                   <p className="text-sm font-medium">
-                    {processing ? "Processing image…" : "Drag & drop an image here"}
+                    {processing ? t("upload.processing") : t("upload.dragDrop")}
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    or click to browse
+                    {t("upload.orClick")}
                   </p>
                 </div>
               </div>
@@ -234,49 +236,49 @@ export function UploadModal() {
 
           {/* Title */}
           <div className="space-y-1.5">
-            <Label htmlFor="upload-title">Title</Label>
+            <Label htmlFor="upload-title">{t("upload.photoTitle")}</Label>
             <Input
               id="upload-title"
               required
               maxLength={120}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="A short, descriptive title"
+              placeholder={t("upload.photoTitlePlaceholder")}
             />
           </div>
 
           {/* Description */}
           <div className="space-y-1.5">
-            <Label htmlFor="upload-desc">Description (optional)</Label>
+            <Label htmlFor="upload-desc">{t("upload.description")}</Label>
             <Textarea
               id="upload-desc"
               maxLength={2000}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Tell the story behind this photo. Settings, location, mood…"
+              placeholder={t("upload.descriptionPlaceholder")}
               rows={3}
             />
           </div>
 
           {/* Tags */}
           <div className="space-y-1.5">
-            <Label htmlFor="upload-tags">Tags</Label>
+            <Label htmlFor="upload-tags">{t("upload.tags")}</Label>
             <div className="flex flex-wrap gap-1.5 mb-1.5">
               <AnimatePresence>
-                {tags.map((t) => (
+                {tags.map((tag) => (
                   <motion.div
-                    key={t}
+                    key={tag}
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.8, opacity: 0 }}
                   >
                     <Badge variant="secondary" className="gap-1 pr-1">
-                      <span>#{t}</span>
+                      <span>#{tag}</span>
                       <button
                         type="button"
-                        onClick={() => removeTag(t)}
+                        onClick={() => removeTag(tag)}
                         className="hover:text-rose-500"
-                        aria-label={`Remove ${t}`}
+                        aria-label={`Remove ${tag}`}
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -291,7 +293,7 @@ export function UploadModal() {
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={onTagKey}
-                placeholder="Type a tag and press Enter"
+                placeholder={t("upload.tagsPlaceholder")}
               />
               {tagInput.trim() && tagSuggestions && tagSuggestions.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-1 z-20 rounded-md border border-border bg-popover shadow-lg overflow-hidden">
@@ -304,7 +306,7 @@ export function UploadModal() {
                     >
                       <span>#{s.name}</span>
                       <span className="text-xs text-muted-foreground">
-                        {s.count} photos
+                        {t("upload.tagCount", { count: String(s.count) })}
                       </span>
                     </button>
                   ))}
@@ -316,7 +318,7 @@ export function UploadModal() {
           {/* Actions */}
           <div className="flex items-center justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={close}>
-              Cancel
+              {t("upload.cancel")}
             </Button>
             <Button
               type="submit"
@@ -328,7 +330,7 @@ export function UploadModal() {
               ) : (
                 <Check className="h-4 w-4" />
               )}
-              Publish photo
+              {t("upload.submit")}
             </Button>
           </div>
         </form>

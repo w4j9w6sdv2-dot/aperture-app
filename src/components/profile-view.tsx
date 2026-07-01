@@ -19,6 +19,7 @@ import { EmptyState } from "@/components/empty-state"
 import { useUser, usePhotosInfinite, useCurrentUser } from "@/lib/api"
 import { useAppStore } from "@/lib/store"
 import { formatDate, formatCount, initialsFromName } from "@/lib/utils"
+import { useT } from "@/lib/i18n"
 
 export function ProfileView() {
   const userId = useAppStore((s) =>
@@ -36,12 +37,13 @@ export function ProfileView() {
   )
   const photosQuery = usePhotosInfinite(photosParams, !!userId)
   const photos = photosQuery.data?.pages.flatMap((p) => p.items) ?? []
+  const t = useT()
 
   if (isLoading || !user) {
     return (
       <div className="max-w-5xl mx-auto space-y-6">
         <Button variant="ghost" size="sm" onClick={goBack} className="gap-1.5">
-          <ArrowLeft className="h-4 w-4" /> Back
+          <ArrowLeft className="h-4 w-4" /> {t("photo.back")}
         </Button>
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
           <Skeleton className="h-24 w-24 rounded-full" />
@@ -71,7 +73,7 @@ export function ProfileView() {
       className="max-w-5xl mx-auto space-y-8"
     >
       <Button variant="ghost" size="sm" onClick={goBack} className="gap-1.5">
-        <ArrowLeft className="h-4 w-4" /> Back
+        <ArrowLeft className="h-4 w-4" /> {t("photo.back")}
       </Button>
 
       {/* Header */}
@@ -95,7 +97,7 @@ export function ProfileView() {
                 onClick={() => setView({ name: "upload" })}
                 className="gap-1.5"
               >
-                <Camera className="h-4 w-4" /> Upload
+                <Camera className="h-4 w-4" /> {t("header.upload")}
               </Button>
             ) : (
               <FollowButton
@@ -118,28 +120,28 @@ export function ProfileView() {
               <span className="font-semibold tabular-nums">
                 {formatCount(user.photoCount ?? 0)}
               </span>
-              <span className="text-muted-foreground">Photos</span>
+              <span className="text-muted-foreground">{t("profile.photos")}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Users className="h-4 w-4 text-muted-foreground" />
               <span className="font-semibold tabular-nums">
                 {formatCount(user.followerCount ?? 0)}
               </span>
-              <span className="text-muted-foreground">Followers</span>
+              <span className="text-muted-foreground">{t("profile.followers")}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Heart className="h-4 w-4 text-muted-foreground" />
               <span className="font-semibold tabular-nums">
                 {formatCount(user.followingCount ?? 0)}
               </span>
-              <span className="text-muted-foreground">Following</span>
+              <span className="text-muted-foreground">{t("profile.following")}</span>
             </div>
           </div>
 
           {user.createdAt && (
             <p className="flex items-center justify-center sm:justify-start gap-1.5 text-xs text-muted-foreground mt-3">
               <CalendarDays className="h-3 w-3" />
-              Joined {formatDate(user.createdAt)}
+              {t("profile.joined")} {formatDate(user.createdAt)}
             </p>
           )}
         </div>
@@ -148,7 +150,7 @@ export function ProfileView() {
       {/* Photos */}
       <div>
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">
-          {user.isMe ? "Your photos" : "Photos"}
+          {user.isMe ? t("profile.yourPhotos") : t("profile.photosTitle")}
         </h2>
 
         {photosQuery.isLoading && (
@@ -162,11 +164,11 @@ export function ProfileView() {
         {!photosQuery.isLoading && photos.length === 0 && (
           <EmptyState
             icon={ImageIcon}
-            title={user.isMe ? "You haven't uploaded any photos" : "No photos yet"}
+            title={user.isMe ? t("profile.noPhotosYou") : t("profile.noPhotos")}
             description={
               user.isMe
-                ? "Share your first photo with the community."
-                : `${user.username} hasn't uploaded any photos yet.`
+                ? t("profile.shareFirst")
+                : t("profile.userNoPhotos", { user: user.username })
             }
             action={
               user.isMe && currentUser ? (
@@ -174,14 +176,14 @@ export function ProfileView() {
                   className="bg-rose-600 hover:bg-rose-700 text-white"
                   onClick={() => setView({ name: "upload" })}
                 >
-                  Upload a photo
+                  {t("feed.uploadAction")}
                 </Button>
               ) : !currentUser ? (
                 <Button
                   className="bg-rose-600 hover:bg-rose-700 text-white"
                   onClick={() => openAuth("signup")}
                 >
-                  Sign up to upload
+                  {t("profile.signupToUpload")}
                 </Button>
               ) : undefined
             }
@@ -219,7 +221,7 @@ export function ProfileView() {
               onClick={() => photosQuery.fetchNextPage()}
               disabled={photosQuery.isFetchingNextPage}
             >
-              {photosQuery.isFetchingNextPage ? "Loading…" : "Load more"}
+              {photosQuery.isFetchingNextPage ? t("common.loading") : t("feed.loadMore")}
             </Button>
           </div>
         )}
