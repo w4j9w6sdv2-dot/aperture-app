@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  email        String   @unique
+  passwordHash String
+  bio          String?
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+
+  photos    Photo[]
+  comments  Comment[]
+  likes     Like[]
+
+  followers Follow[] @relation("Following")
+  following Follow[] @relation("Followers")
+}
+
+model Photo {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  imageUrl    String
+  authorId    String
+  createdAt   DateTime @default(now())
+
+  author   User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  tags     TaggedPhoto[]
+  comments Comment[]
+  likes    Like[]
+}
+
+model Tag {
+  id     String        @id @default(cuid())
+  name   String        @unique
+  photos TaggedPhoto[]
+}
+
+model TaggedPhoto {
+  id      String @id @default(cuid())
+  photoId String
+  tagId   String
+
+  photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  tag   Tag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([photoId, tagId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  body      String
+  authorId  String
+  photoId   String
+  createdAt DateTime @default(now())
+
+  author User  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  photo  Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
+}
+
+model Like {
+  id      String @id @default(cuid())
+  userId  String
+  photoId String
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, photoId])
+}
+
+model Follow {
+  id          String @id @default(cuid())
+  followerId  String
+  followingId String
+
+  follower  User @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+}
