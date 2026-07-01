@@ -28,7 +28,7 @@ export function DownloadButton({ photoId, photoTitle }: DownloadButtonProps) {
   const handleDownload = async (size: SizeKey) => {
     setDownloading(size)
     try {
-      const url = `/api/photos/${photoId}/download?size=${size}`
+      const url = `/api/download/${photoId}?size=${size}`
       // Use a hidden anchor trick to trigger download
       const a = document.createElement("a")
       a.href = url

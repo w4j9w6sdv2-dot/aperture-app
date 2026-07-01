@@ -5,7 +5,7 @@ export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
 /**
- * GET /api/photos/[id]/download?size=original|large|medium|small
+ * GET /api/download/[id]?size=original|large|medium|small
  *
  * Returns the photo image directly with Content-Disposition: attachment
  * so the browser downloads it.
