@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { LogOut, User as UserIcon, Image as ImageIcon, Sparkles } from "lucide-react"
+import { LogOut, User as UserIcon, Image as ImageIcon, Sparkles, Info } from "lucide-react"
 import { useCurrentUser, useLogout } from "@/lib/api"
 import { useAppStore } from "@/lib/store"
 import { initialsFromName } from "@/lib/utils"
@@ -27,6 +27,14 @@ export function UserMenu() {
   if (!currentUser) {
     return (
       <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setView({ name: "about" })}
+          className="text-muted-foreground hover:text-foreground hidden sm:inline-flex"
+        >
+          {t("footer.about")}
+        </Button>
         <Button
           variant="ghost"
           size="sm"
@@ -79,6 +87,10 @@ export function UserMenu() {
         <DropdownMenuItem onClick={() => setView({ name: "upload" })}>
           <ImageIcon className="mr-2 h-4 w-4" />
           {t("header.upload")}
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setView({ name: "about" })}>
+          <Info className="mr-2 h-4 w-4" />
+          {t("footer.about")}
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => {

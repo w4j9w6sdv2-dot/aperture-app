@@ -9,6 +9,7 @@ export type View =
   | { name: "profile"; userId: string }
   | { name: "search"; query: string }
   | { name: "tag"; tagName: string }
+  | { name: "about" }
 
 interface AppState {
   view: View

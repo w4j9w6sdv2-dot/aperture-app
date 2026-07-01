@@ -35,14 +35,12 @@ export function Footer() {
             >
               {t("footer.popularTags")}
             </button>
-            <a
-              href="https://github.com"
-              target="_blank"
-              rel="noreferrer noopener"
+            <button
+              onClick={() => setView({ name: "about" })}
               className="hover:text-foreground transition-colors"
             >
               {t("footer.about")}
-            </a>
+            </button>
           </nav>
 
           <div className="flex items-center gap-3 text-muted-foreground">

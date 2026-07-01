@@ -9,6 +9,7 @@ import { UploadModal } from "@/components/upload-modal"
 import { ProfileView } from "@/components/profile-view"
 import { SearchView } from "@/components/search-view"
 import { TagView } from "@/components/tag-view"
+import { AboutView } from "@/components/about-view"
 import { AuthModal } from "@/components/auth-modal"
 import { useAppStore } from "@/lib/store"
 
@@ -34,6 +35,7 @@ export default function Home() {
               {view.name === "profile" && <ProfileView />}
               {view.name === "search" && <SearchView />}
               {view.name === "tag" && <TagView />}
+              {view.name === "about" && <AboutView />}
             </motion.div>
           </AnimatePresence>
         </div>
