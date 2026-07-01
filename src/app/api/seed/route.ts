@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { runSeed } from "@/../scripts/seed-data"
+import { runSeed } from "@/lib/seed-data"
 
 // NOTE: This route triggers a database re-seed. It is intentionally
 // permissive (no auth) for the demo so anyone previewing the app can
