@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react"
+import { createContext, useContext, useState, ReactNode } from "react"
 
 export type Locale = "it" | "en" | "es" | "fr" | "de" | "pt" | "ja"
 
@@ -827,22 +827,19 @@ interface I18nContextValue {
 const I18nContext = createContext<I18nContextValue | null>(null)
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("it")
-
-  // Load saved locale from localStorage on mount
-  useEffect(() => {
+  // Initialize from localStorage / browser language synchronously (SSR-safe with fallback)
+  const [locale, setLocaleState] = useState<Locale>(() => {
+    if (typeof window === "undefined") return "it"
     try {
       const saved = localStorage.getItem("aperture-locale") as Locale | null
-      if (saved && LOCALES.some((l) => l.code === saved)) {
-        setLocaleState(saved)
-        return
-      }
-      // Detect browser language
+      if (saved && LOCALES.some((l) => l.code === saved)) return saved
       const browserLang = navigator.language.toLowerCase()
       const matched = LOCALES.find((l) => browserLang.startsWith(l.code))
-      setLocaleState(matched ? matched.code : "en")
-    } catch {}
-  }, [])
+      return matched ? matched.code : "it"
+    } catch {
+      return "it"
+    }
+  })
 
   const setLocale = (newLocale: Locale) => {
     setLocaleState(newLocale)
