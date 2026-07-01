@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
-import sharp from "sharp"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -9,8 +8,11 @@ export const dynamic = "force-dynamic"
  * GET /api/photos/[id]/download?size=original|large|medium|small
  *
  * Returns the photo image directly with Content-Disposition: attachment
- * so the browser downloads it. For non-original sizes, the image is
- * resized on-the-fly via sharp.
+ * so the browser downloads it.
+ *
+ * For non-original sizes, we request a resized version from the source
+ * URL by appending URL params (works for Unsplash and many CDNs).
+ * For sources that don't support resizing, the original is returned.
  */
 export async function GET(
   req: NextRequest,
@@ -37,51 +39,45 @@ export async function GET(
       return NextResponse.json({ error: "Photo not found" }, { status: 404 })
     }
 
-    // Fetch original image bytes
-    const imgRes = await fetch(photo.imageUrl)
+    // For Unsplash URLs we can append width/quality params.
+    // For other URLs we just fetch the original.
+    let downloadUrl = photo.imageUrl
+    if (size !== "original" && photo.imageUrl.includes("images.unsplash.com")) {
+      const widths: Record<string, number> = { large: 1200, medium: 800, small: 400 }
+      const w = widths[size]
+      const sep = photo.imageUrl.includes("?") ? "&" : "?"
+      downloadUrl = `${photo.imageUrl}${sep}w=${w}&q=80`
+    }
+
+    // Fetch image bytes
+    const imgRes = await fetch(downloadUrl, { redirect: "follow" })
     if (!imgRes.ok) {
       return NextResponse.json(
-        { error: "Failed to fetch source image" },
+        { error: `Failed to fetch source image: ${imgRes.status}` },
         { status: 502 }
       )
     }
-    const originalBuffer = Buffer.from(await imgRes.arrayBuffer())
+    const buffer = Buffer.from(await imgRes.arrayBuffer())
 
-    // Resize if needed
-    let outputBuffer: Buffer
-    let contentType = "image/jpeg"
-
-    if (size === "original") {
-      outputBuffer = originalBuffer
-      // Detect content type from buffer
-      if (originalBuffer[0] === 0x89 && originalBuffer[1] === 0x50) contentType = "image/png"
-      else if (originalBuffer[0] === 0x47 && originalBuffer[1] === 0x49) contentType = "image/gif"
-      else if (originalBuffer[0] === 0x52 && originalBuffer[1] === 0x49 && originalBuffer[2] === 0x46 && originalBuffer[3] === 0x46) contentType = "image/webp"
-    } else {
-      const widths: Record<string, number> = { large: 1200, medium: 800, small: 400 }
-      const targetWidth = widths[size]
-      outputBuffer = await sharp(originalBuffer)
-        .resize({ width: targetWidth, withoutEnlargement: true })
-        .jpeg({ quality: 90, progressive: true })
-        .toBuffer()
-      contentType = "image/jpeg"
-    }
+    // Detect content type
+    let contentType = imgRes.headers.get("content-type") || "image/jpeg"
+    if (!contentType.startsWith("image/")) contentType = "image/jpeg"
 
     // Build a safe filename
     const safeTitle = photo.title
       .replace(/[^a-zA-Z0-9-_ ]/g, "")
       .replace(/\s+/g, "_")
       .slice(0, 60) || "aperture_photo"
-    const ext = contentType.split("/")[1]
+    const ext = contentType.split("/")[1]?.split(";")[0] || "jpg"
     const filename = `${safeTitle}_${size}.${ext}`
 
     // Return as attachment
-    return new NextResponse(outputBuffer, {
+    return new NextResponse(buffer, {
       status: 200,
       headers: {
         "Content-Type": contentType,
         "Content-Disposition": `attachment; filename="${filename}"`,
-        "Content-Length": String(outputBuffer.length),
+        "Content-Length": String(buffer.length),
         "Cache-Control": "public, max-age=3600",
       },
     })

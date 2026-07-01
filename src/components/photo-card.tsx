@@ -33,7 +33,7 @@ export function PhotoCard({ photo, index = 0 }: PhotoCardProps) {
     >
       <Card
         onClick={openPhoto}
-        className="overflow-hidden cursor-pointer p-0 bg-card border-border/50 hover:border-border transition-all hover:shadow-2xl hover:shadow-black/40"
+        className="overflow-hidden cursor-pointer p-0 bg-card border-border/60 hover:border-black/20 transition-all hover:shadow-xl hover:shadow-black/10 rounded-xl"
       >
         <div className="relative overflow-hidden">
           <img
@@ -70,7 +70,7 @@ export function PhotoCard({ photo, index = 0 }: PhotoCardProps) {
                   {initialsFromName(photo.author.username)}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-xs font-medium truncate group-hover/author:text-rose-400 transition-colors">
+              <span className="text-xs font-medium truncate group-hover/author:text-[#E60023] transition-colors">
                 {photo.author.username}
               </span>
             </button>
@@ -110,7 +110,7 @@ export function PhotoCard({ photo, index = 0 }: PhotoCardProps) {
 export function PhotoCardSkeleton() {
   return (
     <div className="masonry-item">
-      <Card className="overflow-hidden p-0 bg-card border-border/50">
+      <Card className="overflow-hidden p-0 bg-card border-border/60 rounded-xl">
         <div className="w-full h-64 bg-muted animate-pulse" />
         <div className="p-3 space-y-2.5">
           <div className="flex items-center gap-2">

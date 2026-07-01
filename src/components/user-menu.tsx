@@ -38,7 +38,7 @@ export function UserMenu() {
         <Button
           size="sm"
           onClick={() => openAuth("signup")}
-          className="bg-white text-black hover:bg-white/90"
+          className="bg-[#E60023] hover:bg-[#AD081B] text-white border-[#E60023] rounded-full"
         >
           {t("header.signup")}
         </Button>

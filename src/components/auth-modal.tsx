@@ -146,7 +146,7 @@ export function AuthModal() {
                   </div>
                   <Button
                     type="submit"
-                    className="w-full bg-rose-600 hover:bg-rose-700 text-white"
+                    className="w-full bg-[#E60023] hover:bg-[#AD081B] text-white"
                     disabled={loginMut.isPending}
                   >
                     {loginMut.isPending ? (
@@ -232,7 +232,7 @@ export function AuthModal() {
                   </div>
                   <Button
                     type="submit"
-                    className="w-full bg-rose-600 hover:bg-rose-700 text-white"
+                    className="w-full bg-[#E60023] hover:bg-[#AD081B] text-white"
                     disabled={registerMut.isPending || loginMut.isPending}
                   >
                     {registerMut.isPending || loginMut.isPending ? (

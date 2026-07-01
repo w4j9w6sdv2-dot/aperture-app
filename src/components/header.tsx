@@ -97,7 +97,8 @@ export function Header() {
           <Button
             onClick={handleUpload}
             size="sm"
-            className="bg-[#E60023] hover:bg-[#AD081B] text-white border-[#E60023] gap-1.5"
+            variant="outline"
+            className="border-black/20 hover:border-black hover:bg-black hover:text-white text-black bg-white gap-1.5 rounded-full"
           >
             <Upload className="h-4 w-4" />
             <span className="hidden sm:inline">{t("header.upload")}</span>

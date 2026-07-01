@@ -54,7 +54,7 @@ export function AboutView() {
         className="mb-16"
       >
         <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-          <span className="h-1 w-8 bg-rose-500 rounded-full" />
+          <span className="h-1 w-8 bg-[#E60023] rounded-full" />
           {t("about.storyTitle")}
         </h2>
         <div className="space-y-4 text-muted-foreground leading-relaxed">
@@ -69,10 +69,10 @@ export function AboutView() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="mb-16 p-8 rounded-2xl bg-gradient-to-br from-rose-950/40 via-rose-900/20 to-transparent border border-rose-900/30"
+        className="mb-16 p-8 rounded-2xl bg-gradient-to-br from-red-50 via-red-50/50 to-transparent border border-red-200/60"
       >
         <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-          <Heart className="h-6 w-6 text-rose-500" />
+          <Heart className="h-6 w-6 text-[#E60023]" />
           {t("about.missionTitle")}
         </h2>
         <div className="space-y-4 text-foreground/90 leading-relaxed">
@@ -89,7 +89,7 @@ export function AboutView() {
         className="mb-16"
       >
         <h2 className="text-2xl font-bold mb-8 flex items-center gap-2">
-          <span className="h-1 w-8 bg-rose-500 rounded-full" />
+          <span className="h-1 w-8 bg-[#E60023] rounded-full" />
           {t("about.valuesTitle")}
         </h2>
         <div className="grid sm:grid-cols-2 gap-4">
@@ -99,11 +99,11 @@ export function AboutView() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.4 + i * 0.1 }}
-              className="p-5 rounded-xl border border-border/60 bg-card/40 hover:border-rose-900/40 transition-colors"
+              className="p-5 rounded-xl border border-border/60 bg-card/40 hover:border-red-300 transition-colors"
             >
               <div className="flex items-start gap-3">
-                <div className="h-10 w-10 rounded-lg bg-rose-500/10 flex items-center justify-center shrink-0">
-                  <Icon className="h-5 w-5 text-rose-500" />
+                <div className="h-10 w-10 rounded-lg bg-[#E60023]/10 flex items-center justify-center shrink-0">
+                  <Icon className="h-5 w-5 text-[#E60023]" />
                 </div>
                 <div>
                   <h3 className="font-semibold mb-1">{title}</h3>
@@ -123,14 +123,14 @@ export function AboutView() {
         className="mb-16"
       >
         <h2 className="text-2xl font-bold mb-8 flex items-center gap-2">
-          <span className="h-1 w-8 bg-rose-500 rounded-full" />
+          <span className="h-1 w-8 bg-[#E60023] rounded-full" />
           {t("about.founderTitle")}
         </h2>
 
         <div className="p-6 rounded-2xl border border-border/60 bg-card/40">
           <div className="flex flex-col sm:flex-row items-start gap-6">
             {/* Avatar with initial */}
-            <div className="h-20 w-20 rounded-full bg-[#E60023] flex items-center justify-center shrink-0 shadow-lg shadow-red-900/40">
+            <div className="h-20 w-20 rounded-full bg-[#E60023] flex items-center justify-center shrink-0 shadow-lg shadow-red-200">
               <span className="text-3xl font-bold text-white">A</span>
             </div>
 
@@ -138,8 +138,8 @@ export function AboutView() {
               <h3 className="text-xl font-bold">{t("about.founderName")}</h3>
               <p className="text-sm text-muted-foreground mt-1 mb-4 leading-relaxed">{t("about.founderBio")}</p>
 
-              <blockquote className="relative pl-5 border-l-2 border-rose-500 italic text-foreground/90">
-                <Quote className="absolute -left-2 -top-2 h-4 w-4 text-rose-500/50" />
+              <blockquote className="relative pl-5 border-l-2 border-[#E60023] italic text-foreground/90">
+                <Quote className="absolute -left-2 -top-2 h-4 w-4 text-[#E60023]/40" />
                 <p className="text-base">"{t("about.founderQuote")}"</p>
               </blockquote>
             </div>
@@ -152,7 +152,7 @@ export function AboutView() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.6 }}
-        className="text-center p-8 sm:p-12 rounded-2xl bg-gradient-to-br from-rose-950/40 via-rose-900/20 to-transparent border border-rose-900/30"
+        className="text-center p-8 sm:p-12 rounded-2xl bg-gradient-to-br from-red-50 via-red-50/50 to-transparent border border-red-200/60"
       >
         <h2 className="text-2xl font-bold mb-3">{t("about.ctaTitle")}</h2>
         <p className="text-muted-foreground mb-6 max-w-lg mx-auto">{t("about.ctaDesc")}</p>
