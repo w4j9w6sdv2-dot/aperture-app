@@ -30,14 +30,6 @@ export function UserMenu() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setView({ name: "about" })}
-          className="text-muted-foreground hover:text-foreground hidden sm:inline-flex"
-        >
-          {t("footer.about")}
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
           onClick={() => openAuth("login")}
           className="text-muted-foreground hover:text-foreground"
         >
