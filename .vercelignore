@@ -1,0 +1,13 @@
+repos/
+scripts/
+download/
+worklog.md
+.zscripts/
+examples/
+mini-services/
+dev.log
+server.log
+.env
+prisma/*.db
+prisma/*.db-journal
+Caddyfile
