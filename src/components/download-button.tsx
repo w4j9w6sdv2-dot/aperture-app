@@ -17,31 +17,78 @@ import { toast } from "sonner"
 interface DownloadButtonProps {
   photoId: string
   photoTitle: string
+  imageUrl: string
 }
 
 type SizeKey = "original" | "large" | "medium" | "small"
 
-export function DownloadButton({ photoId, photoTitle }: DownloadButtonProps) {
+/**
+ * Build the URL for the requested size.
+ * - For Unsplash URLs: append ?w=<width>&q=80 to get server-side resizing.
+ * - For all other URLs: return as-is (original).
+ */
+function buildUrlForSize(originalUrl: string, size: SizeKey): string {
+  if (size === "original") return originalUrl
+  const widths: Record<SizeKey, number> = { original: 0, large: 1200, medium: 800, small: 400 }
+  const w = widths[size]
+  // Unsplash supports query params for resizing
+  if (originalUrl.includes("images.unsplash.com")) {
+    const sep = originalUrl.includes("?") ? "&" : "?"
+    return `${originalUrl}${sep}w=${w}&q=80`
+  }
+  // For ZAI OSS / other CDNs that may not support resizing, return original
+  return originalUrl
+}
+
+/**
+ * Trigger a browser download for the given URL.
+ * Uses fetch + Blob + anchor link trick so we can set a custom filename.
+ */
+async function triggerDownload(url: string, filename: string) {
+  const res = await fetch(url, { mode: "cors" })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  const blob = await res.blob()
+  const blobUrl = URL.createObjectURL(blob)
+  const a = document.createElement("a")
+  a.href = blobUrl
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  // Revoke after a short delay to ensure download starts
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 1000)
+}
+
+export function DownloadButton({ photoId, photoTitle, imageUrl }: DownloadButtonProps) {
   const t = useT()
   const [downloading, setDownloading] = useState<SizeKey | null>(null)
 
   const handleDownload = async (size: SizeKey) => {
     setDownloading(size)
     try {
-      const url = `/api/download/${photoId}?size=${size}`
-      // Use a hidden anchor trick to trigger download
-      const a = document.createElement("a")
-      a.href = url
-      a.download = "" // let server set the filename
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
+      const url = buildUrlForSize(imageUrl, size)
+      // Build a safe filename
+      const safeTitle = photoTitle
+        .replace(/[^a-zA-Z0-9-_ ]/g, "")
+        .replace(/\s+/g, "_")
+        .slice(0, 60) || "aperture_photo"
+      // Try to detect extension from URL
+      const urlPath = new URL(url).pathname
+      const ext = urlPath.split(".").pop()?.split("?")[0] || "jpg"
+      const filename = `${safeTitle}_${size}.${ext}`
+
+      await triggerDownload(url, filename)
       toast.success(t("photo.downloadStarted"))
     } catch (err) {
       console.error(err)
-      toast.error(t("photo.downloadError"))
+      // Fallback: open in new tab
+      try {
+        window.open(imageUrl, "_blank")
+        toast.success(t("photo.downloadStarted"))
+      } catch {
+        toast.error(t("photo.downloadError"))
+      }
     } finally {
-      // Reset loading state after a short delay
       setTimeout(() => setDownloading(null), 1500)
     }
   }
@@ -59,7 +106,7 @@ export function DownloadButton({ photoId, photoTitle }: DownloadButtonProps) {
         <Button
           variant="outline"
           size="sm"
-          className="h-8 gap-1.5 border-border/60 hover:border-[#E60023]/60 hover:text-[#E60023]"
+          className="h-8 gap-1.5 border-border/60 hover:border-[#E60023]/60 hover:text-[#E60023] rounded-full"
           disabled={downloading !== null}
         >
           {downloading ? (

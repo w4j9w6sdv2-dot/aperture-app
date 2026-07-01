@@ -263,7 +263,7 @@ export function PhotoDetailView() {
               </span>
             </span>
             <div className="ml-auto">
-              <DownloadButton photoId={photo.id} photoTitle={photo.title} />
+              <DownloadButton photoId={photo.id} photoTitle={photo.title} imageUrl={photo.imageUrl} />
             </div>
           </div>
 
