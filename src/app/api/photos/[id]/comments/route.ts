@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import { db } from "@/lib/db"
 import { getCurrentUser } from "@/lib/auth"
+import { recalcPulseScore } from "@/lib/pulse"
 
 export async function GET(
   _req: Request,
@@ -54,7 +55,10 @@ export async function POST(
       )
     }
 
-    const photo = await db.photo.findUnique({ where: { id } })
+    const photo = await db.photo.findUnique({
+      where: { id },
+      select: { id: true, authorId: true, title: true },
+    })
     if (!photo) {
       return NextResponse.json({ error: "Photo not found" }, { status: 404 })
     }
@@ -80,6 +84,22 @@ export async function POST(
         },
       },
     })
+
+    // Recalc pulse score on the photo
+    await recalcPulseScore(id)
+
+    // Notify the photo's author (skip if commenting on own photo)
+    if (photo.authorId !== currentUser.id) {
+      await db.notification.create({
+        data: {
+          userId: photo.authorId,
+          type: "comment",
+          actorId: currentUser.id,
+          photoId: id,
+          text: `${currentUser.username} commented on your photo "${photo.title}".`,
+        },
+      })
+    }
 
     return NextResponse.json({
       id: comment.id,

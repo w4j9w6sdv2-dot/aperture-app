@@ -17,28 +17,52 @@ model User {
   passwordHash String
   bio          String?
   avatarUrl    String?
+  coverUrl     String?
+  location     String?
+  websiteUrl   String?
+  socialLinks  Json?
   createdAt    DateTime @default(now())
 
-  photos    Photo[]
-  comments  Comment[]
-  likes     Like[]
+  photos          Photo[]
+  comments        Comment[]
+  likes           Like[]
 
-  followers Follow[] @relation("Following")
-  following Follow[] @relation("Followers")
+  followers       Follow[]        @relation("Following")
+  following       Follow[]        @relation("Followers")
+
+  collections     Collection[]
+  contestEntries  ContestEntry[]
+  contestVotes    ContestVote[]
+  notifications   Notification[]  @relation("NotificationRecipient")
+  badges          UserBadge[]
+  views           PhotoView[]
 }
 
 model Photo {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  imageUrl    String
-  authorId    String
-  createdAt   DateTime @default(now())
+  id            String   @id @default(cuid())
+  title         String
+  description   String?
+  imageUrl      String
+  authorId      String
+  createdAt     DateTime @default(now())
 
-  author   User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  tags     TaggedPhoto[]
-  comments Comment[]
-  likes    Like[]
+  author        User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  tags          TaggedPhoto[]
+  comments      Comment[]
+  likes         Like[]
+
+  categoryId    String?
+  category      Category?      @relation(fields: [categoryId], references: [id])
+  exif          PhotoExif?
+  location      String?
+  license       String         @default("all-rights")
+  watermarked   Boolean        @default(false)
+  isEditorPick  Boolean        @default(false)
+  pulseScore    Int            @default(0)
+
+  savedIn       SavedPhoto[]
+  contestEntries ContestEntry[]
+  views         PhotoView[]
 }
 
 model Tag {
@@ -89,4 +113,131 @@ model Follow {
   following User @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
 
   @@unique([followerId, followingId])
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  icon      String?
+  createdAt DateTime @default(now())
+  photos    Photo[]
+}
+
+model PhotoExif {
+  id           String   @id @default(cuid())
+  photoId      String   @unique
+  photo        Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  camera       String?
+  lens         String?
+  focalLength  String?
+  aperture     String?
+  shutterSpeed String?
+  iso          String?
+  takenAt      DateTime?
+}
+
+model Collection {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isPrivate   Boolean  @default(false)
+  ownerId     String
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  photos      SavedPhoto[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SavedPhoto {
+  id           String     @id @default(cuid())
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  photoId      String
+  photo        Photo      @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  addedAt      DateTime   @default(now())
+
+  @@unique([collectionId, photoId])
+}
+
+model Contest {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  theme       String
+  prize       String?
+  startsAt    DateTime
+  endsAt      DateTime
+  status      String   @default("active")
+  bannerUrl   String?
+  createdAt   DateTime @default(now())
+  entries     ContestEntry[]
+  votes       ContestVote[]
+}
+
+model ContestEntry {
+  id        String   @id @default(cuid())
+  contestId String
+  contest   Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  photoId   String
+  photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  votes     ContestVote[]
+
+  @@unique([contestId, photoId])
+}
+
+model ContestVote {
+  id        String   @id @default(cuid())
+  contestId String
+  contest   Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  entryId   String
+  entry     ContestEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([entryId, userId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  actorId   String?
+  photoId   String?
+  text      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model PhotoView {
+  id        String   @id @default(cuid())
+  photoId   String
+  photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Badge {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  icon      String
+  color     String   @default("#E60023")
+  users     UserBadge[]
+}
+
+model UserBadge {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId   String
+  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  awardedAt DateTime @default(now())
+
+  @@unique([userId, badgeId])
 }

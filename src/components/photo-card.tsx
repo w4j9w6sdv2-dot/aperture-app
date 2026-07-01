@@ -1,11 +1,12 @@
 "use client"
 
-import { Eye, MessageCircle } from "lucide-react"
+import { Eye, MessageCircle, Flame, Trophy, Star } from "lucide-react"
 import { motion } from "framer-motion"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import { cn, formatCount, initialsFromName } from "@/lib/utils"
 import { LikeButton } from "@/components/like-button"
+import { SaveButton } from "@/components/save-button"
 import { TagBadge } from "@/components/tag-badge"
 import { useAppStore } from "@/lib/store"
 import type { Photo } from "@/lib/api"
@@ -23,6 +24,9 @@ export function PhotoCard({ photo, index = 0 }: PhotoCardProps) {
     e.stopPropagation()
     setView({ name: "profile", userId: photo.author.id })
   }
+
+  const hasContestEntry = photo.contestEntries && photo.contestEntries.length > 0
+  const pulse = photo.pulseScore ?? 0
 
   return (
     <motion.div
@@ -42,6 +46,35 @@ export function PhotoCard({ photo, index = 0 }: PhotoCardProps) {
             loading="lazy"
             className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-[1.03]"
           />
+
+          {/* Top-left badges */}
+          <div className="absolute top-2 left-2 flex flex-col gap-1.5 items-start pointer-events-none">
+            {photo.isEditorPick && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-500/90 text-white text-[10px] font-semibold backdrop-blur-sm">
+                <Star className="h-2.5 w-2.5 fill-white" />
+                <span className="uppercase tracking-wide">{photo.license ? "" : ""}</span>
+              </span>
+            )}
+            {hasContestEntry && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-600/90 text-white text-[10px] font-semibold backdrop-blur-sm">
+                <Trophy className="h-2.5 w-2.5" />
+              </span>
+            )}
+          </div>
+
+          {/* Top-right save button */}
+          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div onClick={(e) => e.stopPropagation()}>
+              <SaveButton
+                photoId={photo.id}
+                savedByMe={photo.savedByMe}
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 bg-black/40 hover:bg-black/60 text-white backdrop-blur-sm rounded-full"
+              />
+            </div>
+          </div>
+
           {/* hover overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
@@ -75,15 +108,24 @@ export function PhotoCard({ photo, index = 0 }: PhotoCardProps) {
               </span>
             </button>
 
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
+            <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1" title={t_views_label(photo)}>
                 <Eye className="h-3.5 w-3.5" />
-                <span className="tabular-nums">{formatCount(photo.commentCount * 3 + photo.likeCount * 7)}</span>
+                <span className="tabular-nums">{formatCount(photo.viewCount ?? photo.commentCount * 3 + photo.likeCount * 7)}</span>
               </span>
               <span className="flex items-center gap-1">
                 <MessageCircle className="h-3.5 w-3.5" />
                 <span className="tabular-nums">{formatCount(photo.commentCount)}</span>
               </span>
+              {pulse > 0 && (
+                <span
+                  className="flex items-center gap-0.5 text-rose-500"
+                  title="Pulse score"
+                >
+                  <Flame className="h-3.5 w-3.5" />
+                  <span className="tabular-nums">{formatCount(pulse)}</span>
+                </span>
+              )}
               <LikeButton
                 photoId={photo.id}
                 liked={photo.likedByMe}
@@ -105,6 +147,10 @@ export function PhotoCard({ photo, index = 0 }: PhotoCardProps) {
       </Card>
     </motion.div>
   )
+}
+
+function t_views_label(photo: Photo): string {
+  return `${photo.viewCount ?? 0} views`
 }
 
 export function PhotoCardSkeleton() {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { motion } from "framer-motion"
 import {
   ArrowLeft,
@@ -9,22 +9,32 @@ import {
   MessageCircle,
   Loader2,
   Send,
+  MapPin,
+  Flame,
+  Bookmark,
+  Trophy,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Badge } from "@/components/ui/badge"
 import { LikeButton } from "@/components/like-button"
 import { DownloadButton } from "@/components/download-button"
 import { TagBadge } from "@/components/tag-badge"
 import { CommentItem } from "@/components/comment-item"
 import { FollowButton } from "@/components/follow-button"
 import { EmptyState } from "@/components/empty-state"
+import { ExifPanel } from "@/components/exif-panel"
+import { LicenseBadge, licenseDescription } from "@/components/license-badge"
+import { SaveButton } from "@/components/save-button"
+import { ContestBadge } from "@/components/contest-badge"
 import {
   usePhoto,
   useCreateComment,
   useDeletePhoto,
   useCurrentUser,
+  useTrackView,
 } from "@/lib/api"
 import { useAppStore } from "@/lib/store"
 import {
@@ -35,7 +45,6 @@ import {
 } from "@/lib/utils"
 import { useT } from "@/lib/i18n"
 import { toast } from "sonner"
-import { useState } from "react"
 
 export function PhotoDetailView() {
   const photoId = useAppStore((s) =>
@@ -50,9 +59,18 @@ export function PhotoDetailView() {
   const [commentBody, setCommentBody] = useState("")
   const createComment = useCreateComment()
   const deletePhoto = useDeletePhoto()
+  const trackView = useTrackView()
   const t = useT()
 
   const commentListRef = useRef<HTMLDivElement>(null)
+  const trackedRef = useRef<string | null>(null)
+
+  // Increment view count once per photo load
+  useEffect(() => {
+    if (!photoId || trackedRef.current === photoId) return
+    trackedRef.current = photoId
+    trackView.mutate({ photoId })
+  }, [photoId, trackView])
 
   useEffect(() => {
     // scroll to top on photo change
@@ -188,24 +206,43 @@ export function PhotoDetailView() {
         <div className="space-y-5">
           {/* Title + actions */}
           <div>
-            <div className="flex items-start justify-between gap-2">
-              <h1 className="text-2xl font-bold leading-tight">{photo.title}</h1>
-              {isAuthor && (
-                <Button
+            <div className="flex items-start justify-between gap-2 flex-wrap">
+              <h1 className="text-2xl font-bold leading-tight flex-1">{photo.title}</h1>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <SaveButton
+                  photoId={photo.id}
+                  savedByMe={photo.savedByMe}
                   variant="ghost"
                   size="icon"
-                  className="shrink-0 text-muted-foreground hover:text-rose-500"
-                  onClick={onDeletePhoto}
-                  aria-label={t("photo.deletePhotoAria")}
-                  disabled={deletePhoto.isPending}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                />
+                {isAuthor && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-rose-500"
+                    onClick={onDeletePhoto}
+                    aria-label={t("photo.deletePhotoAria")}
+                    disabled={deletePhoto.isPending}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
+              <p className="text-xs text-muted-foreground">
+                {formatDate(photo.createdAt)}
+              </p>
+              {photo.isEditorPick && (
+                <Badge variant="outline" className="gap-1 bg-amber-50 text-amber-700 border-amber-200">
+                  <Trophy className="h-3 w-3" />
+                  <span className="text-[10px] uppercase tracking-wide">{t("photo.editorPick")}</span>
+                </Badge>
+              )}
+              {photo.license && (
+                <LicenseBadge license={photo.license} />
               )}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {formatDate(photo.createdAt)}
-            </p>
           </div>
 
           {/* Desktop author */}
@@ -259,9 +296,17 @@ export function PhotoDetailView() {
             <span className="flex items-center gap-1.5 text-muted-foreground">
               <Eye className="h-4 w-4" />
               <span className="tabular-nums">
-                {formatCount(photo.commentCount * 3 + photo.likeCount * 7)}
+                {formatCount(photo.viewCount ?? 0)}
               </span>
             </span>
+            {typeof photo.pulseScore === "number" && photo.pulseScore > 0 && (
+              <span className="flex items-center gap-1.5 text-rose-500">
+                <Flame className="h-4 w-4" />
+                <span className="tabular-nums font-medium">
+                  {formatCount(photo.pulseScore)}
+                </span>
+              </span>
+            )}
             <div className="ml-auto">
               <DownloadButton photoId={photo.id} photoTitle={photo.title} imageUrl={photo.imageUrl} />
             </div>
@@ -274,12 +319,64 @@ export function PhotoDetailView() {
             </p>
           )}
 
+          {/* Category & Location */}
+          {(photo.category || photo.location) && (
+            <div className="flex flex-wrap gap-2 text-xs">
+              {photo.category && (
+                <button
+                  onClick={() =>
+                    setView({ name: "category", categorySlug: photo.category!.slug })
+                  }
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted/60 border border-border/60 hover:bg-muted transition-colors"
+                >
+                  {photo.category.icon && <span>{photo.category.icon}</span>}
+                  <span className="font-medium">{photo.category.name}</span>
+                </button>
+              )}
+              {photo.location && (
+                <Badge variant="outline" className="gap-1">
+                  <MapPin className="h-3 w-3" />
+                  {photo.location}
+                </Badge>
+              )}
+            </div>
+          )}
+
           {/* Tags */}
           {photo.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {photo.tags.map((tag) => (
                 <TagBadge key={tag} name={tag} showHash />
               ))}
+            </div>
+          )}
+
+          {/* Contest entries */}
+          {photo.contestEntries && photo.contestEntries.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {t("photo.contestEntry")}
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {photo.contestEntries.map((ce) => (
+                  <ContestBadge
+                    key={ce.id}
+                    contestId={ce.contest.id}
+                    contestTitle={ce.contest.title}
+                    contestTheme={ce.contest.theme}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* EXIF */}
+          <ExifPanel exif={photo.exif} />
+
+          {/* License description */}
+          {photo.license && (
+            <div className="text-[11px] text-muted-foreground px-2 py-1.5 rounded-md bg-muted/40 border border-border/40">
+              {licenseDescription(photo.license, t)}
             </div>
           )}
 
@@ -343,3 +440,6 @@ export function PhotoDetailView() {
     </motion.div>
   )
 }
+
+// Re-export Bookmark to satisfy import graph
+export { Bookmark }

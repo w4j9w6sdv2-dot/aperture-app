@@ -20,9 +20,13 @@ export async function GET(
             username: true,
             avatarUrl: true,
             bio: true,
+            location: true,
+            websiteUrl: true,
           },
         },
         tags: { include: { tag: true } },
+        category: { select: { id: true, name: true, slug: true, icon: true } },
+        exif: true,
         comments: {
           orderBy: { createdAt: "asc" },
           include: {
@@ -35,14 +39,37 @@ export async function GET(
             },
           },
         },
+        contestEntries: {
+          include: {
+            contest: {
+              select: {
+                id: true,
+                title: true,
+                theme: true,
+                status: true,
+                endsAt: true,
+              },
+            },
+            _count: { select: { votes: true } },
+          },
+        },
         _count: {
-          select: { likes: true, comments: true },
+          select: {
+            likes: true,
+            comments: true,
+            views: true,
+            savedIn: true,
+          },
         },
         ...(currentUser
           ? {
               likes: {
                 where: { userId: currentUser.id },
                 select: { id: true },
+              },
+              savedIn: {
+                where: { collection: { ownerId: currentUser.id } },
+                select: { id: true, collectionId: true },
               },
             }
           : {}),
@@ -67,7 +94,6 @@ export async function GET(
         }))
       : false
 
-    // bump view count? we don't have a views table — skip for simplicity
     return NextResponse.json({
       id: photo.id,
       title: photo.title,
@@ -79,18 +105,36 @@ export async function GET(
         username: photo.author.username,
         avatarUrl: photo.author.avatarUrl,
         bio: photo.author.bio,
+        location: photo.author.location,
+        websiteUrl: photo.author.websiteUrl,
         isFollowing: isFollowingAuthor,
       },
       tags: photo.tags.map((t) => t.tag.name),
+      category: photo.category,
+      exif: photo.exif,
+      location: photo.location,
+      license: photo.license,
+      watermarked: photo.watermarked,
+      isEditorPick: photo.isEditorPick,
+      pulseScore: photo.pulseScore,
       comments: photo.comments.map((c) => ({
         id: c.id,
         body: c.body,
         createdAt: c.createdAt,
         author: c.author,
       })),
+      contestEntries: photo.contestEntries.map((ce) => ({
+        id: ce.id,
+        contestId: ce.contestId,
+        contest: ce.contest,
+        voteCount: ce._count.votes,
+      })),
       likeCount: photo._count.likes,
       commentCount: photo._count.comments,
+      viewCount: photo._count.views,
+      saveCount: photo._count.savedIn,
       likedByMe: currentUser ? photo.likes?.length > 0 : false,
+      savedByMe: currentUser ? (photo.savedIn?.length ?? 0) > 0 : false,
     })
   } catch (err) {
     console.error("[photo] GET error", err)
@@ -203,6 +247,8 @@ export async function DELETE(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
+    // Cascade delete is configured in Prisma schema, but be explicit about
+    // related rows so we don't rely on DB-level cascade for orphaned rows.
     await db.photo.delete({ where: { id } })
     return NextResponse.json({ success: true })
   } catch (err) {

@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { PhotoCard, PhotoCardSkeleton } from "@/components/photo-card"
 import { EmptyState } from "@/components/empty-state"
-import { usePhotosInfinite, useCurrentUser } from "@/lib/api"
+import { usePhotosInfinite, useCurrentUser, type PhotoSort } from "@/lib/api"
 import { useAppStore } from "@/lib/store"
 import { useT } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
@@ -19,15 +19,13 @@ export function FeedView() {
   const { data: currentUser } = useCurrentUser()
   const t = useT()
 
-  // Discover tab supports a sort toggle (newest / popular).
+  // Discover tab supports three sort modes: newest, popular (likes), trending (7d pulse).
   // Feed tab is always newest (followed users).
-  const [discoverSort, setDiscoverSort] = useState<"newest" | "popular">(
-    "newest"
-  )
+  const [discoverSort, setDiscoverSort] = useState<PhotoSort>("newest")
 
   const params = useMemo(
     () => ({
-      sort: tab === "discover" ? discoverSort : ("newest" as const),
+      sort: tab === "discover" ? discoverSort : ("newest" as PhotoSort),
       followedOnly: tab === "feed",
     }),
     [tab, discoverSort]
@@ -39,6 +37,15 @@ export function FeedView() {
   )
 
   const photos = query.data?.pages.flatMap((p) => p.items) ?? []
+
+  const sortOptions: { key: PhotoSort; label: string; icon: typeof Clock }[] = useMemo(
+    () => [
+      { key: "newest", label: t("feed.newest"), icon: Clock },
+      { key: "popular", label: t("feed.popular"), icon: Flame },
+      { key: "trending", label: t("feed.trending"), icon: TrendingUp },
+    ],
+    [t]
+  )
 
   return (
     <div className="space-y-6">
@@ -61,32 +68,26 @@ export function FeedView() {
             aria-label="Sort photos"
             className="inline-flex items-center rounded-md border border-border/60 bg-muted/40 p-0.5 text-xs"
           >
-            <button
-              role="tab"
-              aria-selected={discoverSort === "newest"}
-              onClick={() => setDiscoverSort("newest")}
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1 transition-colors",
-                discoverSort === "newest"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <Clock className="h-3.5 w-3.5" /> {t("feed.newest")}
-            </button>
-            <button
-              role="tab"
-              aria-selected={discoverSort === "popular"}
-              onClick={() => setDiscoverSort("popular")}
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1 transition-colors",
-                discoverSort === "popular"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <TrendingUp className="h-3.5 w-3.5" /> {t("feed.popular")}
-            </button>
+            {sortOptions.map((opt) => {
+              const Icon = opt.icon
+              const active = discoverSort === opt.key
+              return (
+                <button
+                  key={opt.key}
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setDiscoverSort(opt.key)}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1 transition-colors",
+                    active
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <Icon className="h-3.5 w-3.5" /> {opt.label}
+                </button>
+              )
+            })}
           </div>
         )}
       </div>

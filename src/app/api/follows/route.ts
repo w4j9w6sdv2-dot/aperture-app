@@ -57,6 +57,17 @@ export async function POST(req: Request) {
     await db.follow.create({
       data: { followerId: currentUser.id, followingId },
     })
+
+    // Notify the followed user
+    await db.notification.create({
+      data: {
+        userId: followingId,
+        type: "follow",
+        actorId: currentUser.id,
+        text: `${currentUser.username} started following you.`,
+      },
+    })
+
     return NextResponse.json({ following: true })
   } catch (err) {
     console.error("[follows] POST error", err)

@@ -10,6 +10,14 @@ export type View =
   | { name: "search"; query: string }
   | { name: "tag"; tagName: string }
   | { name: "about" }
+  | { name: "contests" }
+  | { name: "contest"; contestId: string }
+  | { name: "collections" }
+  | { name: "collection"; collectionId: string }
+  | { name: "dashboard" }
+  | { name: "editor-picks" }
+  | { name: "notifications" }
+  | { name: "category"; categorySlug: string }
 
 interface AppState {
   view: View

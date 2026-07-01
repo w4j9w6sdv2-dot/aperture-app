@@ -18,11 +18,21 @@ export async function GET(
         email: true,
         bio: true,
         avatarUrl: true,
+        coverUrl: true,
+        location: true,
+        websiteUrl: true,
+        socialLinks: true,
         createdAt: true,
         _count: {
           select: {
             photos: true,
           },
+        },
+        badges: {
+          include: {
+            badge: true,
+          },
+          orderBy: { awardedAt: "desc" },
         },
       },
     })
@@ -56,12 +66,23 @@ export async function GET(
       username: user.username,
       bio: user.bio,
       avatarUrl: user.avatarUrl,
+      coverUrl: user.coverUrl,
+      location: user.location,
+      websiteUrl: user.websiteUrl,
+      socialLinks: user.socialLinks,
       createdAt: user.createdAt,
       photoCount: user._count.photos,
       followerCount,
       followingCount,
       isFollowing: !!isFollowingRow,
       isMe: currentUser?.id === user.id,
+      badges: user.badges.map((ub) => ({
+        id: ub.badge.id,
+        name: ub.badge.name,
+        icon: ub.badge.icon,
+        color: ub.badge.color,
+        awardedAt: ub.awardedAt,
+      })),
     })
   } catch (err) {
     console.error("[user] GET error", err)
