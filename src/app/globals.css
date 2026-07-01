@@ -78,7 +78,7 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
-/* Aperture premium dark theme */
+/* Aperture premium dark theme — Pinterest-inspired accent (red #E60023) */
 .dark {
   --background: oklch(0.10 0 0);              /* near black */
   --foreground: oklch(0.985 0 0);
@@ -94,10 +94,10 @@
   --muted-foreground: oklch(0.65 0 0);
   --accent: oklch(0.22 0 0);
   --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.62 0.22 25);          /* rose-red, Aperture brand */
+  --destructive: oklch(0.60 0.24 25);          /* Pinterest red #E60023 */
   --border: oklch(1 0 0 / 8%);
   --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.62 0.22 25 / 60%);
+  --ring: oklch(0.60 0.24 25 / 60%);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
@@ -105,12 +105,12 @@
   --chart-5: oklch(0.645 0.246 16.439);
   --sidebar: oklch(0.14 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.62 0.22 25);
+  --sidebar-primary: oklch(0.60 0.24 25);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.20 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.62 0.22 25 / 60%);
+  --sidebar-ring: oklch(0.60 0.24 25 / 60%);
 }
 
 @layer base {
@@ -147,13 +147,25 @@
     background-color: oklch(0.6 0 0 / 80%);
   }
 
+  /* Pinterest-style solid red brand color (#E60023) */
   .brand-gradient {
+    background-color: #E60023;
     background-image: linear-gradient(
       135deg,
-      oklch(0.62 0.22 25) 0%,
-      oklch(0.55 0.24 12) 50%,
-      oklch(0.50 0.25 350) 100%
+      #E60023 0%,
+      #AD081B 100%
     );
+  }
+
+  /* Pinterest red utility color */
+  .text-pinterest {
+    color: #E60023;
+  }
+  .bg-pinterest {
+    background-color: #E60023;
+  }
+  .border-pinterest {
+    border-color: #E60023;
   }
 }
 

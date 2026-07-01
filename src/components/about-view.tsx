@@ -1,8 +1,9 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Aperture, Heart, Globe, Lock, Users, ArrowLeft, Quote } from "lucide-react"
+import { Heart, Globe, Lock, Users, ArrowLeft, Quote } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Logo } from "@/components/logo"
 import { useAppStore } from "@/lib/store"
 import { useT, useI18n } from "@/lib/i18n"
 
@@ -38,8 +39,8 @@ export function AboutView() {
         transition={{ duration: 0.5 }}
         className="text-center mb-16"
       >
-        <div className="inline-flex items-center justify-center h-20 w-20 rounded-2xl brand-gradient mb-6 shadow-2xl shadow-rose-900/40">
-          <Aperture className="h-10 w-10 text-white" />
+        <div className="flex justify-center mb-6">
+          <Logo size="lg" showWordmark={false} />
         </div>
         <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">{t("about.title")}</h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t("about.subtitle")}</p>
@@ -129,7 +130,7 @@ export function AboutView() {
         <div className="p-6 rounded-2xl border border-border/60 bg-card/40">
           <div className="flex flex-col sm:flex-row items-start gap-6">
             {/* Avatar with initial */}
-            <div className="h-20 w-20 rounded-full brand-gradient flex items-center justify-center shrink-0 shadow-lg shadow-rose-900/40">
+            <div className="h-20 w-20 rounded-full bg-[#E60023] flex items-center justify-center shrink-0 shadow-lg shadow-red-900/40">
               <span className="text-3xl font-bold text-white">A</span>
             </div>
 
@@ -158,7 +159,7 @@ export function AboutView() {
         <Button
           onClick={() => openAuth("signup")}
           size="lg"
-          className="bg-rose-600 hover:bg-rose-700 text-white border-rose-600"
+          className="bg-[#E60023] hover:bg-[#AD081B] text-white border-[#E60023]"
         >
           {t("about.ctaButton")}
         </Button>

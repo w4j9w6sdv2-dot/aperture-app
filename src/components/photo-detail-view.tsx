@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { LikeButton } from "@/components/like-button"
+import { DownloadButton } from "@/components/download-button"
 import { TagBadge } from "@/components/tag-badge"
 import { CommentItem } from "@/components/comment-item"
 import { FollowButton } from "@/components/follow-button"
@@ -242,7 +243,7 @@ export function PhotoDetailView() {
           </div>
 
           {/* Stats */}
-          <div className="flex items-center gap-4 text-sm">
+          <div className="flex items-center gap-4 text-sm flex-wrap">
             <LikeButton
               photoId={photo.id}
               liked={photo.likedByMe}
@@ -261,6 +262,9 @@ export function PhotoDetailView() {
                 {formatCount(photo.commentCount * 3 + photo.likeCount * 7)}
               </span>
             </span>
+            <div className="ml-auto">
+              <DownloadButton photoId={photo.id} photoTitle={photo.title} />
+            </div>
           </div>
 
           {/* Description */}

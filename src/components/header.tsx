@@ -1,12 +1,13 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Search, Upload, Aperture, X } from "lucide-react"
+import { Search, Upload, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAppStore } from "@/lib/store"
 import { UserMenu } from "@/components/user-menu"
 import { LanguageSwitcher } from "@/components/language-switcher"
+import { Logo } from "@/components/logo"
 import { useCurrentUser } from "@/lib/api"
 import { useT } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
@@ -56,15 +57,10 @@ export function Header() {
         {/* Logo */}
         <button
           onClick={() => setView({ name: "home" })}
-          className="flex items-center gap-2 shrink-0 group"
+          className="flex items-center shrink-0 group"
           aria-label="Aperture home"
         >
-          <span className="h-7 w-7 rounded-md brand-gradient flex items-center justify-center shadow-lg shadow-rose-900/40">
-            <Aperture className="h-4 w-4 text-white" />
-          </span>
-          <span className="text-xl font-bold tracking-tight hidden sm:inline">
-            Aperture
-          </span>
+          <Logo size="md" showWordmark={true} />
         </button>
 
         {/* Desktop search */}
@@ -101,7 +97,7 @@ export function Header() {
           <Button
             onClick={handleUpload}
             size="sm"
-            className="bg-rose-600 hover:bg-rose-700 text-white border-rose-600 gap-1.5"
+            className="bg-[#E60023] hover:bg-[#AD081B] text-white border-[#E60023] gap-1.5"
           >
             <Upload className="h-4 w-4" />
             <span className="hidden sm:inline">{t("header.upload")}</span>

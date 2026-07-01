@@ -1,7 +1,8 @@
 "use client"
 
-import { Aperture, Github, Twitter, Instagram } from "lucide-react"
+import { Github, Twitter, Instagram } from "lucide-react"
 import { useAppStore } from "@/lib/store"
+import { Logo } from "@/components/logo"
 import { useT } from "@/lib/i18n"
 
 export function Footer() {
@@ -13,10 +14,7 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-sm">
-            <span className="h-6 w-6 rounded brand-gradient flex items-center justify-center">
-              <Aperture className="h-3 w-3 text-white" />
-            </span>
-            <span className="font-semibold">Aperture</span>
+            <Logo size="sm" showWordmark={true} />
             <span className="text-muted-foreground hidden sm:inline">
               — {t("footer.tagline")}
             </span>
