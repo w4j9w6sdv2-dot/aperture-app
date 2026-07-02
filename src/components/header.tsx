@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useSession, signOut } from "next-auth/react"
-import { Aperture, LogOut, Upload, User as UserIcon, Search, X, Compass, FolderOpen, Trophy } from "lucide-react"
+import { Aperture, LogOut, Upload, User as UserIcon, Search, X, Compass, FolderOpen, Trophy, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -30,9 +30,10 @@ interface HeaderProps {
   onHomeClick?: () => void
   onCollectionsClick?: () => void
   onContestsClick?: () => void
+  onEditorPicksClick?: () => void
 }
 
-export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch, onCategoryClick, onHomeClick, onCollectionsClick, onContestsClick }: HeaderProps) {
+export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch, onCategoryClick, onHomeClick, onCollectionsClick, onContestsClick, onEditorPicksClick }: HeaderProps) {
   const t = useT()
   const { data: session } = useSession()
   const [searchQuery, setSearchQuery] = useState("")
@@ -148,6 +149,17 @@ export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch, onC
         >
           <Trophy className="h-4 w-4" />
           <span>{t("contest.title")}</span>
+        </Button>
+
+        {/* Editor's Picks (desktop) */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onEditorPicksClick}
+          className="hidden sm:inline-flex gap-1.5 text-muted-foreground hover:text-foreground"
+        >
+          <Star className="h-4 w-4" />
+          <span>{t("editor.title")}</span>
         </Button>
 
         {/* Right actions */}

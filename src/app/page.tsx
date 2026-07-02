@@ -16,6 +16,7 @@ import { CollectionsView } from "@/components/collections-view"
 import { CollectionDetailView } from "@/components/collection-detail-view"
 import { ContestsView } from "@/components/contests-view"
 import { ContestDetailView } from "@/components/contest-detail-view"
+import { EditorPicksView } from "@/components/editor-picks-view"
 import { NSFWGate } from "@/components/nsfw-gate"
 import { Button } from "@/components/ui/button"
 import { useQueryClient } from "@tanstack/react-query"
@@ -31,6 +32,7 @@ type View =
   | { name: "collection"; collectionId: string }
   | { name: "contests" }
   | { name: "contest"; contestId: string }
+  | { name: "editor-picks" }
 
 export default function Home() {
   const t = useT()
@@ -94,6 +96,11 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
+  const openEditorPicks = () => {
+    setView({ name: "editor-picks" })
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
   const openAdultGate = () => {
     setNsfwGateOpen(true)
   }
@@ -123,6 +130,7 @@ export default function Home() {
         onHomeClick={goHome}
         onCollectionsClick={openCollections}
         onContestsClick={openContests}
+        onEditorPicksClick={openEditorPicks}
       />
 
       <main className="flex-1 w-full">
@@ -179,6 +187,8 @@ export default function Home() {
             onPhotoClick={openPhoto}
             onAuthOpen={openAuth}
           />
+        ) : view.name === "editor-picks" ? (
+          <EditorPicksView onPhotoClick={openPhoto} onAuthorClick={openProfile} />
         ) : (
           <>
             {/* Hero section (compact) — only when not logged in */}

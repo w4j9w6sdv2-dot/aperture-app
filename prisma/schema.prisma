@@ -35,9 +35,10 @@ model Photo {
   description String?
   imageUrl    String
   authorId    String
-  isAdult     Boolean  @default(false)
-  categoryId  String?
-  createdAt   DateTime @default(now())
+  isAdult      Boolean  @default(false)
+  isEditorPick Boolean  @default(false)
+  categoryId   String?
+  createdAt    DateTime @default(now())
 
   author   User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
   tags     TaggedPhoto[]
