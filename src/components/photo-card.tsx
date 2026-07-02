@@ -18,6 +18,14 @@ export interface Photo {
     avatarUrl?: string | null
   }
   tags: string[]
+  category?: {
+    id: string
+    name: string
+    slug: string
+    icon: string | null
+    isAdult: boolean
+  } | null
+  isAdult?: boolean
   likeCount?: number
   commentCount?: number
   likedByMe?: boolean
@@ -49,6 +57,12 @@ export function PhotoCard({ photo, index = 0, onClick, onAuthorClick }: PhotoCar
             loading="lazy"
             className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-[1.03]"
           />
+          {/* NSFW badge */}
+          {photo.isAdult && (
+            <span className="absolute top-2 left-2 text-[10px] px-1.5 py-0.5 rounded-full bg-[#E60023] text-white font-medium border border-white/20">
+              18+
+            </span>
+          )}
           {/* Hover overlay with title + author */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">

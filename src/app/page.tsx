@@ -11,6 +11,8 @@ import { FeedView } from "@/components/feed-view"
 import { PhotoDetailView } from "@/components/photo-detail-view"
 import { ProfileView } from "@/components/profile-view"
 import { SearchView } from "@/components/search-view"
+import { CategoryView } from "@/components/category-view"
+import { NSFWGate } from "@/components/nsfw-gate"
 import { Button } from "@/components/ui/button"
 import { useQueryClient } from "@tanstack/react-query"
 import { useT } from "@/lib/i18n"
@@ -20,6 +22,7 @@ type View =
   | { name: "photo"; photoId: string }
   | { name: "profile"; userId: string }
   | { name: "search"; query: string }
+  | { name: "category"; slug: string }
 
 export default function Home() {
   const t = useT()
@@ -30,6 +33,8 @@ export default function Home() {
   const [uploadOpen, setUploadOpen] = useState(false)
   const [view, setView] = useState<View>({ name: "home" })
   const [searchQuery, setSearchQuery] = useState("")
+  const [nsfwGateOpen, setNsfwGateOpen] = useState(false)
+  const [pendingCategorySlug, setPendingCategorySlug] = useState<string | null>(null)
 
   const openAuth = (mode: "login" | "signup") => {
     setAuthMode(mode)
@@ -56,6 +61,24 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
+  const openCategory = (slug: string) => {
+    setView({ name: "category", slug })
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+  const openAdultGate = () => {
+    setNsfwGateOpen(true)
+  }
+
+  const handleNsfwEnabled = () => {
+    qc.invalidateQueries({ queryKey: ["categories"] })
+    qc.invalidateQueries({ queryKey: ["photos"] })
+    if (pendingCategorySlug) {
+      setView({ name: "category", slug: pendingCategorySlug })
+      setPendingCategorySlug(null)
+    }
+  }
+
   const goHome = () => {
     setView({ name: "home" })
     setSearchQuery("")
@@ -68,6 +91,8 @@ export default function Home() {
         onUploadOpen={() => setUploadOpen(true)}
         onProfileClick={() => session?.user?.id && openProfile(session.user.id)}
         onSearch={openSearch}
+        onCategoryClick={openCategory}
+        onHomeClick={goHome}
       />
 
       <main className="flex-1 w-full">
@@ -97,6 +122,14 @@ export default function Home() {
             }}
             onPhotoClick={openPhoto}
             onAuthorClick={openProfile}
+          />
+        ) : view.name === "category" ? (
+          <CategoryView
+            slug={view.slug}
+            onBack={goHome}
+            onPhotoClick={openPhoto}
+            onAuthorClick={openProfile}
+            onAdultGate={openAdultGate}
           />
         ) : (
           <>
@@ -174,6 +207,12 @@ export default function Home() {
         open={uploadOpen}
         onClose={() => setUploadOpen(false)}
         onUploaded={handleUploaded}
+      />
+
+      <NSFWGate
+        open={nsfwGateOpen}
+        onClose={() => setNsfwGateOpen(false)}
+        onEnabled={handleNsfwEnabled}
       />
     </div>
   )

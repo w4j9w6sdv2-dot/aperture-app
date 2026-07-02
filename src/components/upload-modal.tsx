@@ -1,12 +1,21 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Upload, X, Loader2, ImagePlus, Plus, Tag as TagIcon } from "lucide-react"
+import { Upload, X, Loader2, ImagePlus, Plus, Tag as TagIcon, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
+import { Switch } from "@/components/ui/switch"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { useQuery } from "@tanstack/react-query"
 import {
   Dialog,
   DialogContent,
@@ -37,9 +46,21 @@ export function UploadModal({ open, onClose, onUploaded }: UploadModalProps) {
   const [tags, setTags] = useState<string[]>([])
   const [tagInput, setTagInput] = useState("")
   const [tagSuggestions, setTagSuggestions] = useState<TagSuggestion[]>([])
+  const [categoryId, setCategoryId] = useState<string>("")
+  const [isAdult, setIsAdult] = useState(false)
   const [loading, setLoading] = useState(false)
   const [isDragOver, setIsDragOver] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Fetch categories (only non-adult unless user opted in)
+  const { data: categoriesData } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const res = await fetch("/api/categories")
+      if (!res.ok) throw new Error("Failed")
+      return res.json() as Promise<{ items: { id: string; name: string; slug: string; icon: string | null; isAdult: boolean }[] }>
+    },
+  })
 
   // Reset form on close
   useEffect(() => {
@@ -50,6 +71,8 @@ export function UploadModal({ open, onClose, onUploaded }: UploadModalProps) {
       setTags([])
       setTagInput("")
       setTagSuggestions([])
+      setCategoryId("")
+      setIsAdult(false)
       setLoading(false)
       setIsDragOver(false)
     }
@@ -179,6 +202,8 @@ export function UploadModal({ open, onClose, onUploaded }: UploadModalProps) {
           description: description.trim() || null,
           imageUrl,
           tags,
+          categoryId: categoryId || null,
+          isAdult,
         }),
       })
 
@@ -327,6 +352,41 @@ export function UploadModal({ open, onClose, onUploaded }: UploadModalProps) {
               )}
             </div>
             <p className="text-xs text-muted-foreground">{t("upload.tagsHint")}</p>
+          </div>
+
+          {/* Category */}
+          <div className="space-y-1.5">
+            <Label htmlFor="category">{t("upload.category")}</Label>
+            <Select value={categoryId} onValueChange={setCategoryId}>
+              <SelectTrigger id="category">
+                <SelectValue placeholder={t("upload.selectCategory")} />
+              </SelectTrigger>
+              <SelectContent>
+                {categoriesData?.items.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id}>
+                    {cat.name}{cat.isAdult ? " (18+)" : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Adult content toggle */}
+          <div className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border/60 bg-card/40">
+            <div className="flex items-start gap-2.5">
+              <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${isAdult ? "bg-[#E60023]/10" : "bg-muted"}`}>
+                <AlertTriangle className={`h-4 w-4 ${isAdult ? "text-[#E60023]" : "text-muted-foreground"}`} />
+              </div>
+              <div>
+                <p className="text-sm font-medium">{t("upload.isAdult")}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{t("nsfw.description")}</p>
+              </div>
+            </div>
+            <Switch
+              checked={isAdult}
+              onCheckedChange={setIsAdult}
+              className="data-[state=checked]:bg-[#E60023]"
+            />
           </div>
 
           {/* Actions */}

@@ -11,13 +11,15 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  username     String   @unique
-  email        String   @unique
-  passwordHash String
-  bio          String?
-  avatarUrl    String?
-  createdAt    DateTime @default(now())
+  id               String   @id @default(cuid())
+  username         String   @unique
+  email            String   @unique
+  passwordHash     String
+  bio              String?
+  avatarUrl        String?
+  isAdult          Boolean  @default(false)
+  showAdultContent Boolean  @default(false)
+  createdAt        DateTime @default(now())
 
   photos   Photo[]
   comments Comment[]
@@ -30,12 +32,26 @@ model Photo {
   description String?
   imageUrl    String
   authorId    String
+  isAdult     Boolean  @default(false)
+  categoryId  String?
   createdAt   DateTime @default(now())
 
   author   User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
   tags     TaggedPhoto[]
   comments Comment[]
   likes    Like[]
+  category Category?      @relation(fields: [categoryId], references: [id])
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  icon      String?
+  isAdult   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  photos Photo[]
 }
 
 model Tag {

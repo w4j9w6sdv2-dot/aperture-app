@@ -23,6 +23,7 @@ export async function GET(
           },
         },
         tags: { include: { tag: true } },
+        category: { select: { id: true, name: true, slug: true, icon: true, isAdult: true } },
         comments: {
           orderBy: { createdAt: "asc" },
           include: {
@@ -47,6 +48,16 @@ export async function GET(
       return NextResponse.json({ error: "Photo not found" }, { status: 404 })
     }
 
+    // NSFW gate: author can always see own photo, others need opt-in
+    if (photo.isAdult && currentUser?.id !== photo.author.id) {
+      if (!currentUser || !currentUser.showAdultContent) {
+        return NextResponse.json(
+          { error: "This content is for adults only. Enable NSFW in your settings to view it." },
+          { status: 403 }
+        )
+      }
+    }
+
     return NextResponse.json({
       id: photo.id,
       title: photo.title,
@@ -55,6 +66,8 @@ export async function GET(
       createdAt: photo.createdAt,
       author: photo.author,
       tags: photo.tags.map((t) => t.tag.name),
+      category: photo.category,
+      isAdult: photo.isAdult,
       comments: photo.comments.map((c) => ({
         id: c.id,
         body: c.body,

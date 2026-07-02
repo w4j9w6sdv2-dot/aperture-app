@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { ArrowLeft, MessageCircle, Eye, Send, Loader2 } from "lucide-react"
+import { ArrowLeft, MessageCircle, Eye, Send, Loader2, AlertTriangle } from "lucide-react"
 import { motion } from "framer-motion"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -35,6 +35,14 @@ interface PhotoDetail {
     bio?: string | null
   }
   tags: string[]
+  category?: {
+    id: string
+    name: string
+    slug: string
+    icon: string | null
+    isAdult: boolean
+  } | null
+  isAdult?: boolean
   comments: Comment[]
   likeCount: number
   commentCount: number
@@ -47,13 +55,18 @@ export function PhotoDetailView({ photoId, onBack, onAuthorClick, onAuthOpen }: 
   const qc = useQueryClient()
   const [commentBody, setCommentBody] = useState("")
 
-  const { data: photo, isLoading } = useQuery<PhotoDetail>({
+  const { data: photo, isLoading, error } = useQuery<PhotoDetail>({
     queryKey: ["photo", photoId],
     queryFn: async () => {
       const res = await fetch(`/api/photos/${photoId}`)
+      if (res.status === 403) {
+        const data = await res.json()
+        throw new Error(data.error || "NSFW")
+      }
       if (!res.ok) throw new Error("Failed")
       return res.json()
     },
+    retry: false,
   })
 
   const addComment = useMutation({
@@ -111,12 +124,29 @@ export function PhotoDetailView({ photoId, onBack, onAuthorClick, onAuthOpen }: 
   }
 
   if (!photo) {
+    // Check if it's an NSFW error
+    const isNsfwError = error?.message?.includes("adult") || error?.message?.includes("18")
     return (
       <div className="mx-auto max-w-md px-4 py-16 text-center">
-        <p className="text-muted-foreground">{t("common.error")}</p>
-        <Button onClick={onBack} variant="outline" className="mt-4">
-          {t("photo.back")}
-        </Button>
+        {isNsfwError ? (
+          <>
+            <div className="mx-auto w-16 h-16 rounded-full bg-[#E60023]/10 flex items-center justify-center mb-4">
+              <AlertTriangle className="h-7 w-7 text-[#E60023]" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">{t("nsfw.title")}</h3>
+            <p className="text-sm text-muted-foreground mb-6">{t("nsfw.description")}</p>
+            <Button onClick={onBack} variant="outline" className="mr-2">
+              {t("photo.back")}
+            </Button>
+          </>
+        ) : (
+          <>
+            <p className="text-muted-foreground">{t("common.error")}</p>
+            <Button onClick={onBack} variant="outline" className="mt-4">
+              {t("photo.back")}
+            </Button>
+          </>
+        )}
       </div>
     )
   }

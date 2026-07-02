@@ -8,6 +8,8 @@ const createPhotoSchema = z.object({
   description: z.string().max(2000).optional().nullable(),
   imageUrl: z.string().min(1, "Image is required"),
   tags: z.array(z.string()).optional(),
+  categoryId: z.string().optional().nullable(),
+  isAdult: z.boolean().optional().default(false),
 })
 
 export async function GET(req: Request) {
@@ -19,6 +21,9 @@ export async function GET(req: Request) {
 
     const where: Record<string, unknown> = {}
     if (authorId) where.authorId = authorId
+
+    const categoryId = searchParams.get("categoryId")
+    if (categoryId) where.categoryId = categoryId
 
     const search = searchParams.get("search")
     if (search) {
@@ -32,6 +37,12 @@ export async function GET(req: Request) {
 
     const currentUser = await getCurrentUser()
 
+    // NSFW filter: hide adult photos unless the current user opted in
+    const showAdult = currentUser?.showAdultContent === true
+    if (!showAdult) {
+      where.isAdult = false
+    }
+
     const photos = await db.photo.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -42,6 +53,7 @@ export async function GET(req: Request) {
           select: { id: true, username: true, avatarUrl: true },
         },
         tags: { include: { tag: true } },
+        category: { select: { id: true, name: true, slug: true, icon: true, isAdult: true } },
         _count: { select: { likes: true, comments: true } },
         ...(currentUser
           ? {
@@ -67,6 +79,8 @@ export async function GET(req: Request) {
         createdAt: p.createdAt,
         author: p.author,
         tags: p.tags.map((t) => t.tag.name),
+        category: p.category,
+        isAdult: p.isAdult,
         likeCount: p._count.likes,
         commentCount: p._count.comments,
         likedByMe: currentUser ? (p.likes?.length ?? 0) > 0 : false,
@@ -95,7 +109,7 @@ export async function POST(req: Request) {
       )
     }
 
-    const { title, description, imageUrl, tags = [] } = parsed.data
+    const { title, description, imageUrl, tags = [], categoryId, isAdult } = parsed.data
 
     const photo = await db.photo.create({
       data: {
@@ -103,6 +117,8 @@ export async function POST(req: Request) {
         description: description ?? null,
         imageUrl,
         authorId: currentUser.id,
+        categoryId: categoryId ?? null,
+        isAdult,
         tags:
           tags.length > 0
             ? {
@@ -122,6 +138,7 @@ export async function POST(req: Request) {
       include: {
         author: { select: { id: true, username: true, avatarUrl: true } },
         tags: { include: { tag: true } },
+        category: { select: { id: true, name: true, slug: true, icon: true, isAdult: true } },
       },
     })
 
@@ -133,6 +150,8 @@ export async function POST(req: Request) {
       createdAt: photo.createdAt,
       author: photo.author,
       tags: photo.tags.map((t) => t.tag.name),
+      category: photo.category,
+      isAdult: photo.isAdult,
       likeCount: 0,
       commentCount: 0,
       likedByMe: false,

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useSession, signOut } from "next-auth/react"
-import { Aperture, LogOut, Upload, User as UserIcon, Search, X } from "lucide-react"
+import { Aperture, LogOut, Upload, User as UserIcon, Search, X, Compass, FolderOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -12,25 +12,38 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { useT } from "@/lib/i18n"
 import { toast } from "sonner"
 import { initialsFromName } from "@/lib/utils"
+import { useQuery } from "@tanstack/react-query"
 
 interface HeaderProps {
   onAuthOpen: (mode: "login" | "signup") => void
   onUploadOpen?: () => void
   onProfileClick?: () => void
   onSearch?: (query: string) => void
+  onCategoryClick?: (slug: string) => void
+  onHomeClick?: () => void
 }
 
-export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch }: HeaderProps) {
+export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch, onCategoryClick, onHomeClick }: HeaderProps) {
   const t = useT()
   const { data: session } = useSession()
   const [searchQuery, setSearchQuery] = useState("")
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
+
+  const { data: categoriesData } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const res = await fetch("/api/categories")
+      if (!res.ok) throw new Error("Failed")
+      return res.json() as Promise<{ items: { id: string; name: string; slug: string; icon: string | null; isAdult: boolean; photoCount: number }[] }>
+    },
+  })
 
   const handleLogout = () => {
     signOut({ redirect: false }).then(() => {
@@ -50,12 +63,12 @@ export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch }: H
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 h-14 sm:h-16 flex items-center gap-3 sm:gap-6">
         {/* Logo */}
-        <div className="flex items-center gap-2 shrink-0">
+        <button onClick={onHomeClick} className="flex items-center gap-2 shrink-0">
           <span className="h-7 w-7 rounded-md bg-[#E60023] flex items-center justify-center shadow-lg shadow-red-900/30">
             <Aperture className="h-4 w-4 text-white" />
           </span>
           <span className="text-xl font-bold tracking-tight">Aperture</span>
-        </div>
+        </button>
 
         {/* Desktop search */}
         <form onSubmit={submitSearch} className="hidden sm:flex flex-1 max-w-xl items-center relative">
@@ -77,6 +90,39 @@ export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch }: H
             </button>
           )}
         </form>
+
+        {/* Categories dropdown (desktop) */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="hidden sm:inline-flex gap-1.5 text-muted-foreground hover:text-foreground">
+              <Compass className="h-4 w-4" />
+              <span>{t("nav.explore")}</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-56">
+            <DropdownMenuLabel>{t("nav.categories")}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              {categoriesData?.items.map((cat) => (
+                <DropdownMenuItem
+                  key={cat.id}
+                  onClick={() => onCategoryClick?.(cat.slug)}
+                  className="flex items-center justify-between gap-2"
+                >
+                  <span className="flex items-center gap-2">
+                    {cat.name}
+                    {cat.isAdult && (
+                      <span className="text-[10px] px-1 py-0.5 rounded-full bg-[#E60023]/10 text-[#E60023] font-medium">
+                        18+
+                      </span>
+                    )}
+                  </span>
+                  <span className="text-xs text-muted-foreground">{cat.photoCount}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* Right actions */}
         <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
