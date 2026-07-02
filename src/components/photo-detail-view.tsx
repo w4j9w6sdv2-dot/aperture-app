@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Skeleton } from "@/components/ui/skeleton"
 import { LikeButton } from "@/components/like-button"
 import { SaveButton } from "@/components/save-button"
+import { DownloadButton } from "@/components/download-button"
 import { CommentItem, type Comment } from "@/components/comment-item"
 import { useSession } from "next-auth/react"
 import { useT } from "@/lib/i18n"
@@ -241,8 +242,9 @@ export function PhotoDetailView({ photoId, onBack, onAuthorClick, onAuthOpen }: 
               <MessageCircle className="h-4 w-4" />
               <span className="tabular-nums">{formatCount(photo.commentCount)}</span>
             </span>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-2">
               <SaveButton photoId={photo.id} size="md" />
+              <DownloadButton photoId={photo.id} photoTitle={photo.title} imageUrl={photo.imageUrl} />
             </div>
           </div>
 
