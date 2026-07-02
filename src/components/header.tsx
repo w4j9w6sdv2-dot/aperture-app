@@ -17,6 +17,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { DeleteAccountButton } from "@/components/delete-account-button"
 import { useT } from "@/lib/i18n"
 import { toast } from "sonner"
 import { initialsFromName } from "@/lib/utils"
@@ -250,6 +251,10 @@ export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch, onC
                     <LogOut className="mr-2 h-4 w-4" />
                     {t("header.logout")}
                   </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <div className="px-2 py-1">
+                    <DeleteAccountButton />
+                  </div>
                 </DropdownMenuContent>
               </DropdownMenu>
             </>
