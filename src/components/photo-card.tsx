@@ -1,8 +1,10 @@
 "use client"
 
 import { motion } from "framer-motion"
+import { Heart, MessageCircle } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { cn, initialsFromName } from "@/lib/utils"
+import { LikeButton } from "@/components/like-button"
+import { cn, formatCount, initialsFromName } from "@/lib/utils"
 
 export interface Photo {
   id: string
@@ -16,6 +18,9 @@ export interface Photo {
     avatarUrl?: string | null
   }
   tags: string[]
+  likeCount?: number
+  commentCount?: number
+  likedByMe?: boolean
 }
 
 interface PhotoCardProps {
@@ -58,31 +63,48 @@ export function PhotoCard({ photo, index = 0, onClick, onAuthorClick }: PhotoCar
           </div>
         </div>
 
-        {/* Author info under photo */}
-        <div className="p-3 flex items-center gap-2">
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              onAuthorClick?.(photo.author.id)
-            }}
-            className="flex items-center gap-2 min-w-0 group/author"
-          >
-            <Avatar className="h-7 w-7 ring-1 ring-border">
-              {photo.author.avatarUrl ? (
-                <AvatarImage src={photo.author.avatarUrl} alt={photo.author.username} />
-              ) : null}
-              <AvatarFallback className="text-[10px] bg-muted">
-                {initialsFromName(photo.author.username)}
-              </AvatarFallback>
-            </Avatar>
-            <span className="text-xs font-medium truncate group-hover/author:text-[#E60023] transition-colors">
-              {photo.author.username}
-            </span>
-          </button>
+        {/* Author info + stats under photo */}
+        <div className="p-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onAuthorClick?.(photo.author.id)
+              }}
+              className="flex items-center gap-2 min-w-0 group/author"
+            >
+              <Avatar className="h-7 w-7 ring-1 ring-border">
+                {photo.author.avatarUrl ? (
+                  <AvatarImage src={photo.author.avatarUrl} alt={photo.author.username} />
+                ) : null}
+                <AvatarFallback className="text-[10px] bg-muted">
+                  {initialsFromName(photo.author.username)}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-xs font-medium truncate group-hover/author:text-[#E60023] transition-colors">
+                {photo.author.username}
+              </span>
+            </button>
+
+            {/* Like + comment stats */}
+            <div className="ml-auto flex items-center gap-3 text-xs text-muted-foreground">
+              <LikeButton
+                photoId={photo.id}
+                liked={photo.likedByMe ?? false}
+                count={photo.likeCount ?? 0}
+                size="sm"
+                showCount
+              />
+              <span className="flex items-center gap-1">
+                <MessageCircle className="h-3.5 w-3.5" />
+                <span className="tabular-nums">{formatCount(photo.commentCount ?? 0)}</span>
+              </span>
+            </div>
+          </div>
 
           {photo.tags.length > 0 && (
-            <div className="ml-auto flex gap-1 overflow-hidden">
-              {photo.tags.slice(0, 2).map((tag) => (
+            <div className="flex gap-1 overflow-hidden">
+              {photo.tags.slice(0, 3).map((tag) => (
                 <span
                   key={tag}
                   className="text-[10px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded truncate max-w-[80px]"

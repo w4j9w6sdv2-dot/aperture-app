@@ -20,6 +20,8 @@ export async function GET(req: Request) {
     const where: Record<string, unknown> = {}
     if (authorId) where.authorId = authorId
 
+    const currentUser = await getCurrentUser()
+
     const photos = await db.photo.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -30,6 +32,15 @@ export async function GET(req: Request) {
           select: { id: true, username: true, avatarUrl: true },
         },
         tags: { include: { tag: true } },
+        _count: { select: { likes: true, comments: true } },
+        ...(currentUser
+          ? {
+              likes: {
+                where: { userId: currentUser.id },
+                select: { id: true },
+              },
+            }
+          : {}),
       },
     })
 
@@ -46,6 +57,9 @@ export async function GET(req: Request) {
         createdAt: p.createdAt,
         author: p.author,
         tags: p.tags.map((t) => t.tag.name),
+        likeCount: p._count.likes,
+        commentCount: p._count.comments,
+        likedByMe: currentUser ? (p.likes?.length ?? 0) > 0 : false,
       })),
       nextCursor,
     })
@@ -109,6 +123,9 @@ export async function POST(req: Request) {
       createdAt: photo.createdAt,
       author: photo.author,
       tags: photo.tags.map((t) => t.tag.name),
+      likeCount: 0,
+      commentCount: 0,
+      likedByMe: false,
     })
   } catch (err) {
     console.error("[photos] POST error", err)

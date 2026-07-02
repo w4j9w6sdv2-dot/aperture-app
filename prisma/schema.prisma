@@ -19,7 +19,9 @@ model User {
   avatarUrl    String?
   createdAt    DateTime @default(now())
 
-  photos Photo[]
+  photos   Photo[]
+  comments Comment[]
+  likes    Like[]
 }
 
 model Photo {
@@ -30,8 +32,10 @@ model Photo {
   authorId    String
   createdAt   DateTime @default(now())
 
-  author User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  tags   TaggedPhoto[]
+  author   User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  tags     TaggedPhoto[]
+  comments Comment[]
+  likes    Like[]
 }
 
 model Tag {
@@ -49,5 +53,27 @@ model TaggedPhoto {
   tag   Tag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@unique([photoId, tagId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  body      String
+  authorId  String
+  photoId   String
+  createdAt DateTime @default(now())
+
+  author User  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  photo  Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
+}
+
+model Like {
+  id      String @id @default(cuid())
+  userId  String
+  photoId String
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, photoId])
 }
 

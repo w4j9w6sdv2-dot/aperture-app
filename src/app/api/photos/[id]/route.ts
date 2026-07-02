@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { db } from "@/lib/db"
+import { getCurrentUser } from "@/lib/auth"
 
 export async function GET(
   _req: Request,
@@ -7,6 +8,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params
+    const currentUser = await getCurrentUser()
 
     const photo = await db.photo.findUnique({
       where: { id },
@@ -21,6 +23,23 @@ export async function GET(
           },
         },
         tags: { include: { tag: true } },
+        comments: {
+          orderBy: { createdAt: "asc" },
+          include: {
+            author: {
+              select: { id: true, username: true, avatarUrl: true },
+            },
+          },
+        },
+        _count: { select: { likes: true, comments: true } },
+        ...(currentUser
+          ? {
+              likes: {
+                where: { userId: currentUser.id },
+                select: { id: true },
+              },
+            }
+          : {}),
       },
     })
 
@@ -36,6 +55,15 @@ export async function GET(
       createdAt: photo.createdAt,
       author: photo.author,
       tags: photo.tags.map((t) => t.tag.name),
+      comments: photo.comments.map((c) => ({
+        id: c.id,
+        body: c.body,
+        createdAt: c.createdAt,
+        author: c.author,
+      })),
+      likeCount: photo._count.likes,
+      commentCount: photo._count.comments,
+      likedByMe: currentUser ? (photo.likes?.length ?? 0) > 0 : false,
     })
   } catch (err) {
     console.error("[photo detail] error", err)
