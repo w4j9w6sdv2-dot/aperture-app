@@ -1,133 +1,101 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { Search, Upload, X } from "lucide-react"
+import { useState } from "react"
+import { useSession, signOut } from "next-auth/react"
+import { Aperture, LogOut, User as UserIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { useAppStore } from "@/lib/store"
-import { UserMenu } from "@/components/user-menu"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { LanguageSwitcher } from "@/components/language-switcher"
-import { Logo } from "@/components/logo"
-import { useCurrentUser } from "@/lib/api"
 import { useT } from "@/lib/i18n"
-import { cn } from "@/lib/utils"
+import { toast } from "sonner"
+import { initialsFromName } from "@/lib/utils"
 
-export function Header() {
-  const setView = useAppStore((s) => s.setView)
-  const openAuth = useAppStore((s) => s.openAuth)
-  const { data: currentUser } = useCurrentUser()
+interface HeaderProps {
+  onAuthOpen: (mode: "login" | "signup") => void
+}
+
+export function Header({ onAuthOpen }: HeaderProps) {
   const t = useT()
-  const [query, setQuery] = useState("")
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const { data: session } = useSession()
 
-  // close mobile search on Escape
-  useEffect(() => {
-    if (!mobileSearchOpen) return
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMobileSearchOpen(false)
-    }
-    window.addEventListener("keydown", handler)
-    return () => window.removeEventListener("keydown", handler)
-  }, [mobileSearchOpen])
-
-  useEffect(() => {
-    if (mobileSearchOpen) inputRef.current?.focus()
-  }, [mobileSearchOpen])
-
-  const submitSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    const q = query.trim()
-    if (!q) return
-    setView({ name: "search", query: q })
-    setMobileSearchOpen(false)
-  }
-
-  const handleUpload = () => {
-    if (!currentUser) {
-      openAuth("signup")
-      return
-    }
-    setView({ name: "upload" })
+  const handleLogout = () => {
+    signOut({ redirect: false }).then(() => {
+      toast.success(t("toast.loggedOut"))
+    })
   }
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 h-14 sm:h-16 flex items-center gap-3 sm:gap-6">
         {/* Logo */}
-        <button
-          onClick={() => setView({ name: "home" })}
-          className="flex items-center shrink-0 group"
-          aria-label="Aperture home"
-        >
-          <Logo size="md" showWordmark={true} />
-        </button>
-
-        {/* Desktop search */}
-        <form
-          onSubmit={submitSearch}
-          className="hidden sm:flex flex-1 max-w-xl items-center relative"
-        >
-          <Search className="absolute left-3 h-4 w-4 text-muted-foreground pointer-events-none" />
-          <Input
-            type="text"
-            placeholder={t("header.searchPlaceholder")}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="pl-9 pr-3 h-10 bg-muted/60 border-border/60 focus-visible:bg-background focus-visible:border-rose-500/50"
-          />
-        </form>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="h-7 w-7 rounded-md bg-[#E60023] flex items-center justify-center shadow-lg shadow-red-900/30">
+            <Aperture className="h-4 w-4 text-white" />
+          </span>
+          <span className="text-xl font-bold tracking-tight">Aperture</span>
+        </div>
 
         {/* Right actions */}
         <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="sm:hidden"
-            onClick={() => setMobileSearchOpen((v) => !v)}
-            aria-label="Toggle search"
-          >
-            {mobileSearchOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Search className="h-5 w-5" />
-            )}
-          </Button>
-
-          <Button
-            onClick={handleUpload}
-            size="sm"
-            variant="outline"
-            className="border-black/20 hover:border-black hover:bg-black hover:text-white text-black bg-white gap-1.5 rounded-full"
-          >
-            <Upload className="h-4 w-4" />
-            <span className="hidden sm:inline">{t("header.upload")}</span>
-          </Button>
-
           <LanguageSwitcher />
 
-          <UserMenu />
+          {session?.user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="rounded-full ring-1 ring-border hover:ring-[#E60023]/60 transition-all p-0.5">
+                  <Avatar className="h-8 w-8">
+                    {session.user.image ? (
+                      <AvatarImage src={session.user.image} alt={session.user.name || ""} />
+                    ) : null}
+                    <AvatarFallback className="text-xs bg-muted">
+                      {initialsFromName(session.user.name || session.user.email || "U")}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel className="flex flex-col gap-0.5">
+                  <span className="text-sm font-medium">{session.user.name || session.user.username}</span>
+                  <span className="text-xs text-muted-foreground font-normal">{session.user.email}</span>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="text-[#E60023] focus:text-[#E60023]"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  {t("header.logout")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onAuthOpen("login")}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                {t("header.login")}
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => onAuthOpen("signup")}
+                className="bg-[#E60023] hover:bg-[#AD081B] text-white border-[#E60023] rounded-full"
+              >
+                {t("header.signup")}
+              </Button>
+            </>
+          )}
         </div>
-      </div>
-
-      {/* Mobile search dropdown */}
-      <div
-        className={cn(
-          "sm:hidden overflow-hidden transition-all duration-200 border-t border-border/60",
-          mobileSearchOpen ? "max-h-20" : "max-h-0 border-t-0"
-        )}
-      >
-        <form onSubmit={submitSearch} className="px-4 py-3 flex items-center relative">
-          <Search className="absolute left-7 h-4 w-4 text-muted-foreground pointer-events-none" />
-          <Input
-            ref={inputRef}
-            type="text"
-            placeholder={t("header.searchPlaceholder")}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="pl-9 h-10 bg-muted/60"
-          />
-        </form>
       </div>
     </header>
   )
