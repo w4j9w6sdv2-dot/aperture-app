@@ -12,6 +12,8 @@ import { PhotoDetailView } from "@/components/photo-detail-view"
 import { ProfileView } from "@/components/profile-view"
 import { SearchView } from "@/components/search-view"
 import { CategoryView } from "@/components/category-view"
+import { CollectionsView } from "@/components/collections-view"
+import { CollectionDetailView } from "@/components/collection-detail-view"
 import { NSFWGate } from "@/components/nsfw-gate"
 import { Button } from "@/components/ui/button"
 import { useQueryClient } from "@tanstack/react-query"
@@ -23,6 +25,8 @@ type View =
   | { name: "profile"; userId: string }
   | { name: "search"; query: string }
   | { name: "category"; slug: string }
+  | { name: "collections" }
+  | { name: "collection"; collectionId: string }
 
 export default function Home() {
   const t = useT()
@@ -66,6 +70,16 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
+  const openCollections = () => {
+    setView({ name: "collections" })
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+  const openCollection = (collectionId: string) => {
+    setView({ name: "collection", collectionId })
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
   const openAdultGate = () => {
     setNsfwGateOpen(true)
   }
@@ -93,6 +107,7 @@ export default function Home() {
         onSearch={openSearch}
         onCategoryClick={openCategory}
         onHomeClick={goHome}
+        onCollectionsClick={openCollections}
       />
 
       <main className="flex-1 w-full">
@@ -130,6 +145,15 @@ export default function Home() {
             onPhotoClick={openPhoto}
             onAuthorClick={openProfile}
             onAdultGate={openAdultGate}
+          />
+        ) : view.name === "collections" ? (
+          <CollectionsView onCollectionClick={openCollection} />
+        ) : view.name === "collection" ? (
+          <CollectionDetailView
+            collectionId={view.collectionId}
+            onBack={openCollections}
+            onPhotoClick={openPhoto}
+            onAuthorClick={openProfile}
           />
         ) : (
           <>

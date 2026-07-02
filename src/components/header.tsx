@@ -28,9 +28,10 @@ interface HeaderProps {
   onSearch?: (query: string) => void
   onCategoryClick?: (slug: string) => void
   onHomeClick?: () => void
+  onCollectionsClick?: () => void
 }
 
-export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch, onCategoryClick, onHomeClick }: HeaderProps) {
+export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch, onCategoryClick, onHomeClick, onCollectionsClick }: HeaderProps) {
   const t = useT()
   const { data: session } = useSession()
   const [searchQuery, setSearchQuery] = useState("")
@@ -123,6 +124,19 @@ export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch, onC
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* Collections (desktop, logged in only) */}
+        {session?.user && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onCollectionsClick}
+            className="hidden sm:inline-flex gap-1.5 text-muted-foreground hover:text-foreground"
+          >
+            <FolderOpen className="h-4 w-4" />
+            <span>{t("collection.title")}</span>
+          </Button>
+        )}
 
         {/* Right actions */}
         <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">

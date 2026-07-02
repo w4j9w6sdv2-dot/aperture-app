@@ -24,6 +24,7 @@ model User {
   photos   Photo[]
   comments Comment[]
   likes    Like[]
+  collections Collection[]
 }
 
 model Photo {
@@ -41,6 +42,7 @@ model Photo {
   comments Comment[]
   likes    Like[]
   category Category?      @relation(fields: [categoryId], references: [id])
+  savedIn  SavedPhoto[]
 }
 
 model Category {
@@ -91,5 +93,30 @@ model Like {
   photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
 
   @@unique([userId, photoId])
+}
+
+model Collection {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isPrivate   Boolean  @default(false)
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner  User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  photos SavedPhoto[]
+}
+
+model SavedPhoto {
+  id           String     @id @default(cuid())
+  collectionId String
+  photoId      String
+  addedAt      DateTime   @default(now())
+
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  photo      Photo       @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, photoId])
 }
 

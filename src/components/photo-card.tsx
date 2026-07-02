@@ -4,6 +4,7 @@ import { motion } from "framer-motion"
 import { Heart, MessageCircle } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { LikeButton } from "@/components/like-button"
+import { SaveButton } from "@/components/save-button"
 import { cn, formatCount, initialsFromName } from "@/lib/utils"
 
 export interface Photo {
@@ -100,7 +101,7 @@ export function PhotoCard({ photo, index = 0, onClick, onAuthorClick }: PhotoCar
               </span>
             </button>
 
-            {/* Like + comment stats */}
+            {/* Like + comment + save stats */}
             <div className="ml-auto flex items-center gap-3 text-xs text-muted-foreground">
               <LikeButton
                 photoId={photo.id}
@@ -113,6 +114,7 @@ export function PhotoCard({ photo, index = 0, onClick, onAuthorClick }: PhotoCar
                 <MessageCircle className="h-3.5 w-3.5" />
                 <span className="tabular-nums">{formatCount(photo.commentCount ?? 0)}</span>
               </span>
+              <SaveButton photoId={photo.id} size="sm" />
             </div>
           </div>
 
