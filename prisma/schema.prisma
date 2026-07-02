@@ -18,4 +18,36 @@ model User {
   bio          String?
   avatarUrl    String?
   createdAt    DateTime @default(now())
+
+  photos Photo[]
 }
+
+model Photo {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  imageUrl    String
+  authorId    String
+  createdAt   DateTime @default(now())
+
+  author User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  tags   TaggedPhoto[]
+}
+
+model Tag {
+  id     String        @id @default(cuid())
+  name   String        @unique
+  photos TaggedPhoto[]
+}
+
+model TaggedPhoto {
+  id      String @id @default(cuid())
+  photoId String
+  tagId   String
+
+  photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  tag   Tag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([photoId, tagId])
+}
+

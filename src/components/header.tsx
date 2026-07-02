@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useSession, signOut } from "next-auth/react"
-import { Aperture, LogOut, User as UserIcon } from "lucide-react"
+import { Aperture, LogOut, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -20,9 +20,10 @@ import { initialsFromName } from "@/lib/utils"
 
 interface HeaderProps {
   onAuthOpen: (mode: "login" | "signup") => void
+  onUploadOpen?: () => void
 }
 
-export function Header({ onAuthOpen }: HeaderProps) {
+export function Header({ onAuthOpen, onUploadOpen }: HeaderProps) {
   const t = useT()
   const { data: session } = useSession()
 
@@ -48,34 +49,46 @@ export function Header({ onAuthOpen }: HeaderProps) {
           <LanguageSwitcher />
 
           {session?.user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="rounded-full ring-1 ring-border hover:ring-[#E60023]/60 transition-all p-0.5">
-                  <Avatar className="h-8 w-8">
-                    {session.user.image ? (
-                      <AvatarImage src={session.user.image} alt={session.user.name || ""} />
-                    ) : null}
-                    <AvatarFallback className="text-xs bg-muted">
-                      {initialsFromName(session.user.name || session.user.email || "U")}
-                    </AvatarFallback>
-                  </Avatar>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel className="flex flex-col gap-0.5">
-                  <span className="text-sm font-medium">{session.user.name || session.user.username}</span>
-                  <span className="text-xs text-muted-foreground font-normal">{session.user.email}</span>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={handleLogout}
-                  className="text-[#E60023] focus:text-[#E60023]"
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  {t("header.logout")}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <>
+              <Button
+                onClick={onUploadOpen}
+                size="sm"
+                variant="outline"
+                className="border-border/60 hover:border-foreground/40 hover:bg-foreground hover:text-background text-foreground bg-background gap-1.5 rounded-full"
+              >
+                <Upload className="h-4 w-4" />
+                <span className="hidden sm:inline">{t("header.upload")}</span>
+              </Button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="rounded-full ring-1 ring-border hover:ring-[#E60023]/60 transition-all p-0.5">
+                    <Avatar className="h-8 w-8">
+                      {session.user.image ? (
+                        <AvatarImage src={session.user.image} alt={session.user.name || ""} />
+                      ) : null}
+                      <AvatarFallback className="text-xs bg-muted">
+                        {initialsFromName(session.user.name || session.user.email || "U")}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="flex flex-col gap-0.5">
+                    <span className="text-sm font-medium">{session.user.name || session.user.username}</span>
+                    <span className="text-xs text-muted-foreground font-normal">{session.user.email}</span>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    className="text-[#E60023] focus:text-[#E60023]"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    {t("header.logout")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
           ) : (
             <>
               <Button

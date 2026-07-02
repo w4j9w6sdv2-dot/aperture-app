@@ -2,10 +2,11 @@
 
 import { useState } from "react"
 import { useSession } from "next-auth/react"
-import { Aperture, Camera, Sparkles } from "lucide-react"
+import { Aperture, Camera, Sparkles, ImageOff } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { AuthModal } from "@/components/auth-modal"
+import { UploadModal } from "@/components/upload-modal"
 import { Button } from "@/components/ui/button"
 import { useT } from "@/lib/i18n"
 
@@ -14,6 +15,8 @@ export default function Home() {
   const { data: session } = useSession()
   const [authOpen, setAuthOpen] = useState(false)
   const [authMode, setAuthMode] = useState<"login" | "signup">("signup")
+  const [uploadOpen, setUploadOpen] = useState(false)
+  const [uploadCount, setUploadCount] = useState(0)
 
   const openAuth = (mode: "login" | "signup") => {
     setAuthMode(mode)
@@ -22,7 +25,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Header onAuthOpen={openAuth} />
+      <Header
+        onAuthOpen={openAuth}
+        onUploadOpen={() => setUploadOpen(true)}
+      />
 
       <main className="flex-1 w-full flex items-center justify-center">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 py-16 sm:py-24 text-center">
@@ -40,24 +46,48 @@ export default function Home() {
             {t("footer.tagline")}
           </p>
           <p className="text-sm text-muted-foreground/70 mb-10">
-            Feature 1/12: Authentication
+            Features 1-2/12: Authentication + Photo Upload
           </p>
 
           {session?.user ? (
             // Logged in state
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#E60023]/10 border border-[#E60023]/20">
                 <span className="h-2 w-2 rounded-full bg-[#E60023] animate-pulse" />
                 <span className="text-sm font-medium text-[#E60023]">
                   {t("toast.welcome")}, {session.user.name || session.user.username}
                 </span>
               </div>
-              <p className="text-sm text-muted-foreground">
-                {session.user.email}
-              </p>
+
+              {uploadCount > 0 ? (
+                <div className="space-y-4">
+                  <div className="inline-flex items-center gap-2 text-sm text-foreground">
+                    <Camera className="h-4 w-4 text-[#E60023]" />
+                    <span>{uploadCount} photo{uploadCount > 1 ? "s" : ""} uploaded</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                    Your photos are saved. The feed view will come in the next feature.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-base text-muted-foreground max-w-md mx-auto">
+                    You haven&apos;t uploaded any photos yet. Share your first shot!
+                  </p>
+                  <Button
+                    size="lg"
+                    onClick={() => setUploadOpen(true)}
+                    className="bg-[#E60023] hover:bg-[#AD081B] text-white border-[#E60023] rounded-full px-8 gap-2"
+                  >
+                    <Camera className="h-4 w-4" />
+                    {t("header.upload")}
+                  </Button>
+                </div>
+              )}
+
               <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground mt-6">
                 <Sparkles className="h-3.5 w-3.5" />
-                <span>More features coming soon...</span>
+                <span>Feed view coming next...</span>
               </div>
             </div>
           ) : (
@@ -112,6 +142,12 @@ export default function Home() {
         mode={authMode}
         onClose={() => setAuthOpen(false)}
         onModeChange={setAuthMode}
+      />
+
+      <UploadModal
+        open={uploadOpen}
+        onClose={() => setUploadOpen(false)}
+        onUploaded={() => setUploadCount((c) => c + 1)}
       />
     </div>
   )
