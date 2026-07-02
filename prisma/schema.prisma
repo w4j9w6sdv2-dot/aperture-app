@@ -27,6 +27,9 @@ model User {
   collections Collection[]
   contestEntries ContestEntry[]
   contestVotes   ContestVote[]
+  followers Follow[] @relation("Following")
+  following Follow[] @relation("Followers")
+  views    PhotoView[]
 }
 
 model Photo {
@@ -47,6 +50,7 @@ model Photo {
   category Category?      @relation(fields: [categoryId], references: [id])
   savedIn  SavedPhoto[]
   contestEntries ContestEntry[]
+  views    PhotoView[]
 }
 
 model Category {
@@ -168,4 +172,26 @@ model ContestVote {
 
   @@unique([entryId, userId])
 }
+
+model Follow {
+  id          String @id @default(cuid())
+  followerId  String
+  followingId String
+
+  follower  User @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+}
+
+model PhotoView {
+  id        String   @id @default(cuid())
+  photoId   String
+  userId    String?
+  createdAt DateTime @default(now())
+
+  photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  user  User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
 

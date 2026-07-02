@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useSession, signOut } from "next-auth/react"
-import { Aperture, LogOut, Upload, User as UserIcon, Search, X, Compass, FolderOpen, Trophy, Star } from "lucide-react"
+import { Aperture, LogOut, Upload, User as UserIcon, Search, X, Compass, FolderOpen, Trophy, Star, LayoutDashboard } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -31,9 +31,10 @@ interface HeaderProps {
   onCollectionsClick?: () => void
   onContestsClick?: () => void
   onEditorPicksClick?: () => void
+  onDashboardClick?: () => void
 }
 
-export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch, onCategoryClick, onHomeClick, onCollectionsClick, onContestsClick, onEditorPicksClick }: HeaderProps) {
+export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch, onCategoryClick, onHomeClick, onCollectionsClick, onContestsClick, onEditorPicksClick, onDashboardClick }: HeaderProps) {
   const t = useT()
   const { data: session } = useSession()
   const [searchQuery, setSearchQuery] = useState("")
@@ -161,6 +162,19 @@ export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch, onC
           <Star className="h-4 w-4" />
           <span>{t("editor.title")}</span>
         </Button>
+
+        {/* Dashboard (desktop, logged in only) */}
+        {session?.user && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onDashboardClick}
+            className="hidden sm:inline-flex gap-1.5 text-muted-foreground hover:text-foreground"
+          >
+            <LayoutDashboard className="h-4 w-4" />
+            <span>{t("dashboard.title")}</span>
+          </Button>
+        )}
 
         {/* Right actions */}
         <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
