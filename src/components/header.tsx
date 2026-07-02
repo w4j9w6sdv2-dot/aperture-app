@@ -89,8 +89,8 @@ export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch, onC
           <span className="text-xl font-bold tracking-tight">Aperture</span>
         </button>
 
-        {/* Desktop search */}
-        <form onSubmit={submitSearch} className="hidden sm:flex flex-1 max-w-2xl items-center relative">
+        {/* Desktop search — takes all available space */}
+        <form onSubmit={submitSearch} className="hidden sm:flex flex-1 items-center relative">
           <Search className="absolute left-3 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             type="text"
@@ -110,86 +110,69 @@ export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch, onC
           )}
         </form>
 
-        {/* Categories dropdown (desktop) */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="hidden sm:inline-flex gap-1.5 text-muted-foreground hover:text-foreground">
-              <Compass className="h-4 w-4" />
-              <span>{t("nav.explore")}</span>
+        {/* Nav buttons — icon only on small, icon+text on xl */}
+        <div className="hidden sm:flex items-center gap-0.5 shrink-0">
+          {/* Categories dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground px-2">
+                <Compass className="h-4 w-4" />
+                <span className="hidden xl:inline">{t("nav.explore")}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              <DropdownMenuLabel>{t("nav.categories")}</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                {categoriesData?.items.map((cat) => (
+                  <DropdownMenuItem
+                    key={cat.id}
+                    onClick={() => onCategoryClick?.(cat.slug)}
+                    className="flex items-center justify-between gap-2"
+                  >
+                    <span className="flex items-center gap-2">
+                      {cat.name}
+                      {cat.isAdult && (
+                        <span className="text-[10px] px-1 py-0.5 rounded-full bg-[#E60023]/10 text-[#E60023] font-medium">
+                          18+
+                        </span>
+                      )}
+                    </span>
+                    <span className="text-xs text-muted-foreground">{cat.photoCount}</span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Collections */}
+          {session?.user && (
+            <Button variant="ghost" size="sm" onClick={onCollectionsClick} className="gap-1.5 text-muted-foreground hover:text-foreground px-2">
+              <FolderOpen className="h-4 w-4" />
+              <span className="hidden xl:inline">{t("collection.title")}</span>
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-56">
-            <DropdownMenuLabel>{t("nav.categories")}</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              {categoriesData?.items.map((cat) => (
-                <DropdownMenuItem
-                  key={cat.id}
-                  onClick={() => onCategoryClick?.(cat.slug)}
-                  className="flex items-center justify-between gap-2"
-                >
-                  <span className="flex items-center gap-2">
-                    {cat.name}
-                    {cat.isAdult && (
-                      <span className="text-[10px] px-1 py-0.5 rounded-full bg-[#E60023]/10 text-[#E60023] font-medium">
-                        18+
-                      </span>
-                    )}
-                  </span>
-                  <span className="text-xs text-muted-foreground">{cat.photoCount}</span>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          )}
 
-        {/* Collections (desktop, logged in only) */}
-        {session?.user && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onCollectionsClick}
-            className="hidden sm:inline-flex gap-1.5 text-muted-foreground hover:text-foreground"
-          >
-            <FolderOpen className="h-4 w-4" />
-            <span>{t("collection.title")}</span>
+          {/* Contests */}
+          <Button variant="ghost" size="sm" onClick={onContestsClick} className="gap-1.5 text-muted-foreground hover:text-foreground px-2">
+            <Trophy className="h-4 w-4" />
+            <span className="hidden xl:inline">{t("contest.title")}</span>
           </Button>
-        )}
 
-        {/* Contests (desktop) */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onContestsClick}
-          className="hidden sm:inline-flex gap-1.5 text-muted-foreground hover:text-foreground"
-        >
-          <Trophy className="h-4 w-4" />
-          <span>{t("contest.title")}</span>
-        </Button>
-
-        {/* Editor's Picks (desktop) */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onEditorPicksClick}
-          className="hidden sm:inline-flex gap-1.5 text-muted-foreground hover:text-foreground"
-        >
-          <Star className="h-4 w-4" />
-          <span>{t("editor.title")}</span>
-        </Button>
-
-        {/* Dashboard (desktop, logged in only) */}
-        {session?.user && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onDashboardClick}
-            className="hidden sm:inline-flex gap-1.5 text-muted-foreground hover:text-foreground"
-          >
-            <LayoutDashboard className="h-4 w-4" />
-            <span>{t("dashboard.title")}</span>
+          {/* Editor's Picks */}
+          <Button variant="ghost" size="sm" onClick={onEditorPicksClick} className="gap-1.5 text-muted-foreground hover:text-foreground px-2">
+            <Star className="h-4 w-4" />
+            <span className="hidden xl:inline">{t("editor.title")}</span>
           </Button>
-        )}
+
+          {/* Dashboard */}
+          {session?.user && (
+            <Button variant="ghost" size="sm" onClick={onDashboardClick} className="gap-1.5 text-muted-foreground hover:text-foreground px-2">
+              <LayoutDashboard className="h-4 w-4" />
+              <span className="hidden xl:inline">{t("dashboard.title")}</span>
+            </Button>
+          )}
+        </div>
 
         {/* Right actions */}
         <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
