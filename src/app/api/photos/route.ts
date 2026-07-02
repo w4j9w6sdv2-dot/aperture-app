@@ -50,8 +50,24 @@ export async function GET(req: Request) {
     const currentUser = await getCurrentUser()
 
     // Adult photos are NEVER shown in the public feed, search, or profiles.
-    // They are only accessible via the Nude category (which has its own NSFW gate).
     where.isAdult = false
+
+    // Personalized feed: if logged in AND no specific filter (authorId, search, categoryId),
+    // show only photos from people the user follows + their own photos.
+    // If NOT logged in, show a curated selection (editor picks first, then recent).
+    const isFilteredFeed = !!(authorId || search || categoryId)
+    if (currentUser && !isFilteredFeed) {
+      const follows = await db.follow.findMany({
+        where: { followerId: currentUser.id },
+        select: { followingId: true },
+      })
+      const followingIds = follows.map((f) => f.followingId)
+      // Include user's own photos + followed users' photos
+      followingIds.push(currentUser.id)
+      if (followingIds.length > 0) {
+        where.authorId = { in: followingIds }
+      }
+    }
 
     // Sort options: newest, popular, pulse, trending
     const sort = searchParams.get("sort") ?? "newest"

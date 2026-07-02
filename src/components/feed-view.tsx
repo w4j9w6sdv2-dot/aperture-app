@@ -3,16 +3,18 @@
 import { useEffect, useRef, useCallback } from "react"
 import { useInfiniteQuery } from "@tanstack/react-query"
 import { motion } from "framer-motion"
-import { Camera, Loader2 } from "lucide-react"
+import { Camera, Loader2, Compass } from "lucide-react"
 import { PhotoCard, PhotoCardSkeleton, type Photo } from "@/components/photo-card"
+import { Button } from "@/components/ui/button"
 import { useT } from "@/lib/i18n"
 
 interface FeedViewProps {
   onPhotoClick?: (photoId: string) => void
   onAuthorClick?: (userId: string) => void
+  onDiscoverClick?: () => void
 }
 
-export function FeedView({ onPhotoClick, onAuthorClick }: FeedViewProps) {
+export function FeedView({ onPhotoClick, onAuthorClick, onDiscoverClick }: FeedViewProps) {
   const t = useT()
   const sentinelRef = useRef<HTMLDivElement>(null)
 
@@ -62,10 +64,19 @@ export function FeedView({ onPhotoClick, onAuthorClick }: FeedViewProps) {
         className="mx-auto max-w-md px-4 py-16 text-center"
       >
         <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-          <Camera className="h-7 w-7 text-muted-foreground" />
+          <Compass className="h-7 w-7 text-muted-foreground" />
         </div>
-        <h3 className="text-lg font-semibold mb-1">{t("feed.emptyDiscover")}</h3>
-        <p className="text-sm text-muted-foreground">{t("feed.emptyDiscoverDesc")}</p>
+        <h3 className="text-lg font-semibold mb-1">{t("feed.emptyFeed")}</h3>
+        <p className="text-sm text-muted-foreground mb-4">{t("feed.emptyFeedDesc")}</p>
+        {onDiscoverClick && (
+          <Button
+            onClick={onDiscoverClick}
+            className="bg-[#E60023] hover:bg-[#AD081B] text-white border-[#E60023] gap-1.5 rounded-full"
+          >
+            <Compass className="h-4 w-4" />
+            {t("feed.discoverMore")}
+          </Button>
+        )}
       </motion.div>
     )
   }

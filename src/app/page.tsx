@@ -255,7 +255,7 @@ export default function Home() {
             )}
 
             {/* Feed — always visible */}
-            <FeedView onPhotoClick={openPhoto} onAuthorClick={openProfile} />
+            <FeedView onPhotoClick={openPhoto} onAuthorClick={openProfile} onDiscoverClick={() => openCategory("portraits")} />
 
             {/* Compact welcome strip when logged in */}
             {session?.user && (
