@@ -4,14 +4,8 @@ import bcrypt from "bcryptjs"
 import { db } from "@/lib/db"
 
 export const authOptions: NextAuthOptions = {
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
+  session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET || "aperture-dev-secret-change-me",
-  pages: {
-    signIn: "/",
-  },
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -20,31 +14,20 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email and password are required")
-        }
+        if (!credentials?.email || !credentials?.password) return null
 
         const user = await db.user.findUnique({
           where: { email: credentials.email.toLowerCase() },
         })
+        if (!user) return null
 
-        if (!user) {
-          throw new Error("No user found with that email")
-        }
-
-        const isValid = await bcrypt.compare(
-          credentials.password,
-          user.passwordHash
-        )
-
-        if (!isValid) {
-          throw new Error("Invalid password")
-        }
+        const ok = await bcrypt.compare(credentials.password, user.passwordHash)
+        if (!ok) return null
 
         return {
           id: user.id,
-          name: user.username,
           email: user.email,
+          name: user.username,
         }
       },
     }),
@@ -53,28 +36,38 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
-        token.username = user.name ?? ""
+        token.username = user.name
       }
       return token
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string
-        session.user.username = token.username as string
+        ;(session.user as { id?: string }).id = token.id as string
+        ;(session.user as { username?: string }).username = token.username as string
       }
       return session
     },
   },
+  pages: {
+    signIn: "/",
+  },
 }
 
-// Helper to get the current user from the session in server routes
 export async function getCurrentUser() {
-  const { getServerSession } = await import("next-auth")
-  const session = await getServerSession(authOptions)
+  const session = await import("next-auth").then((m) => getServerSession(authOptions))
   if (!session?.user?.id) return null
-  return session.user as {
-    id: string
-    username: string
-    email: string
-  }
+  const user = await db.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      id: true,
+      username: true,
+      email: true,
+      bio: true,
+      avatarUrl: true,
+      createdAt: true,
+    },
+  })
+  return user
 }
+
+import { getServerSession } from "next-auth"
