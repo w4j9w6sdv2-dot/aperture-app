@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server"
 import { db } from "@/lib/db"
-import { getCurrentUser } from "@/lib/auth"
+
+export const dynamic = "force-dynamic"
 
 export async function GET() {
   try {
-    const currentUser = await getCurrentUser()
-
     // Show ALL categories (including adult) so users can see them in the menu.
     // The NSFW gate triggers when they click on an adult category.
     const categories = await db.category.findMany({
