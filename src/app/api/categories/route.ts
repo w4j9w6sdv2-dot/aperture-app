@@ -5,10 +5,10 @@ import { getCurrentUser } from "@/lib/auth"
 export async function GET() {
   try {
     const currentUser = await getCurrentUser()
-    const showAdult = currentUser?.showAdultContent === true
 
+    // Show ALL categories (including adult) so users can see them in the menu.
+    // The NSFW gate triggers when they click on an adult category.
     const categories = await db.category.findMany({
-      where: showAdult ? {} : { isAdult: false },
       orderBy: { name: "asc" },
       include: {
         _count: { select: { photos: true } },
