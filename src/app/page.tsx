@@ -18,6 +18,7 @@ import { ContestsView } from "@/components/contests-view"
 import { ContestDetailView } from "@/components/contest-detail-view"
 import { EditorPicksView } from "@/components/editor-picks-view"
 import { DashboardView } from "@/components/dashboard-view"
+import { NotificationsView } from "@/components/notifications-view"
 import { NSFWGate } from "@/components/nsfw-gate"
 import { Button } from "@/components/ui/button"
 import { useQueryClient } from "@tanstack/react-query"
@@ -35,6 +36,7 @@ type View =
   | { name: "contest"; contestId: string }
   | { name: "editor-picks" }
   | { name: "dashboard" }
+  | { name: "notifications" }
 
 export default function Home() {
   const t = useT()
@@ -108,6 +110,11 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
+  const openNotifications = () => {
+    setView({ name: "notifications" })
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
   const openAdultGate = () => {
     setNsfwGateOpen(true)
   }
@@ -139,6 +146,7 @@ export default function Home() {
         onContestsClick={openContests}
         onEditorPicksClick={openEditorPicks}
         onDashboardClick={openDashboard}
+        onNotificationsClick={openNotifications}
       />
 
       <main className="flex-1 w-full">
@@ -199,6 +207,8 @@ export default function Home() {
           <EditorPicksView onPhotoClick={openPhoto} onAuthorClick={openProfile} />
         ) : view.name === "dashboard" ? (
           <DashboardView onPhotoClick={openPhoto} />
+        ) : view.name === "notifications" ? (
+          <NotificationsView onPhotoClick={openPhoto} />
         ) : (
           <>
             {/* Hero section (compact) — only when not logged in */}

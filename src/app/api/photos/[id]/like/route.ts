@@ -27,6 +27,21 @@ export async function POST(
       // Like
       await db.like.create({ data: { userId: currentUser.id, photoId } })
       const likeCount = await db.like.count({ where: { photoId } })
+
+      // Create notification for photo owner (don't notify self)
+      const photo = await db.photo.findUnique({ where: { id: photoId }, select: { authorId: true, title: true } })
+      if (photo && photo.authorId !== currentUser.id) {
+        await db.notification.create({
+          data: {
+            userId: photo.authorId,
+            type: "like",
+            actorId: currentUser.id,
+            photoId,
+            text: `${currentUser.username} liked your photo "${photo.title}"`,
+          },
+        })
+      }
+
       return NextResponse.json({ liked: true, likeCount })
     }
   } catch (err) {

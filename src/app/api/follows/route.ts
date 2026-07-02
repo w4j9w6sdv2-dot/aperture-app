@@ -29,6 +29,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ following: false })
     } else {
       await db.follow.create({ data: { followerId: currentUser.id, followingId } })
+
+      // Create notification for the followed user
+      await db.notification.create({
+        data: {
+          userId: followingId,
+          type: "follow",
+          actorId: currentUser.id,
+          text: `${currentUser.username} started following you`,
+        },
+      })
+
       return NextResponse.json({ following: true })
     }
   } catch (err) {

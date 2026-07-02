@@ -30,6 +30,7 @@ model User {
   followers Follow[] @relation("Following")
   following Follow[] @relation("Followers")
   views    PhotoView[]
+  notifications Notification[]
 }
 
 model Photo {
@@ -193,5 +194,19 @@ model PhotoView {
   photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
   user  User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  actorId   String?
+  photoId   String?
+  text      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
 
 

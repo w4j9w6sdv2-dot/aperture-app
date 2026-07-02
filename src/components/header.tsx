@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useSession, signOut } from "next-auth/react"
-import { Aperture, LogOut, Upload, User as UserIcon, Search, X, Compass, FolderOpen, Trophy, Star, LayoutDashboard } from "lucide-react"
+import { Aperture, LogOut, Upload, User as UserIcon, Search, X, Compass, FolderOpen, Trophy, Star, LayoutDashboard, Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -32,9 +32,10 @@ interface HeaderProps {
   onContestsClick?: () => void
   onEditorPicksClick?: () => void
   onDashboardClick?: () => void
+  onNotificationsClick?: () => void
 }
 
-export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch, onCategoryClick, onHomeClick, onCollectionsClick, onContestsClick, onEditorPicksClick, onDashboardClick }: HeaderProps) {
+export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch, onCategoryClick, onHomeClick, onCollectionsClick, onContestsClick, onEditorPicksClick, onDashboardClick, onNotificationsClick }: HeaderProps) {
   const t = useT()
   const { data: session } = useSession()
   const [searchQuery, setSearchQuery] = useState("")
@@ -48,6 +49,19 @@ export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch, onC
       return res.json() as Promise<{ items: { id: string; name: string; slug: string; icon: string | null; isAdult: boolean; photoCount: number }[] }>
     },
   })
+
+  const { data: notifData } = useQuery({
+    queryKey: ["notifications"],
+    queryFn: async () => {
+      const res = await fetch("/api/notifications")
+      if (!res.ok) throw new Error("Failed")
+      return res.json() as Promise<{ unreadCount: number }>
+    },
+    enabled: !!session?.user,
+    refetchInterval: 30_000,
+  })
+
+  const unreadCount = notifData?.unreadCount ?? 0
 
   const handleLogout = () => {
     signOut({ redirect: false }).then(() => {
@@ -190,6 +204,24 @@ export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch, onC
           </Button>
 
           <LanguageSwitcher />
+
+          {/* Notifications bell (logged in only) */}
+          {session?.user && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onNotificationsClick}
+              className="relative h-9 w-9 text-muted-foreground hover:text-foreground"
+              aria-label={t("notification.title")}
+            >
+              <Bell className="h-4 w-4" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-[#E60023] text-white text-[10px] font-bold flex items-center justify-center">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
+            </Button>
+          )}
 
           {session?.user ? (
             <>

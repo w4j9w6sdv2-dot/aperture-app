@@ -71,6 +71,20 @@ export async function POST(
       },
     })
 
+    // Create notification for photo owner (don't notify self)
+    const photo = await db.photo.findUnique({ where: { id: photoId }, select: { authorId: true } })
+    if (photo && photo.authorId !== currentUser.id) {
+      await db.notification.create({
+        data: {
+          userId: photo.authorId,
+          type: "comment",
+          actorId: currentUser.id,
+          photoId,
+          text: `${currentUser.username} commented on your photo`,
+        },
+      })
+    }
+
     return NextResponse.json({
       id: comment.id,
       body: comment.body,
