@@ -65,6 +65,8 @@ export async function getCurrentUser() {
       bio: true,
       avatarUrl: true,
       createdAt: true,
+      isAdult: true,
+      showAdultContent: true,
     },
   })
   return user
