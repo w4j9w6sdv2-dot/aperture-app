@@ -90,7 +90,7 @@ export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch, onC
         </button>
 
         {/* Desktop search */}
-        <form onSubmit={submitSearch} className="hidden sm:flex flex-1 max-w-xl items-center relative">
+        <form onSubmit={submitSearch} className="hidden sm:flex flex-1 max-w-2xl items-center relative">
           <Search className="absolute left-3 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             type="text"
