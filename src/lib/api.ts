@@ -162,6 +162,7 @@ export interface Photo {
   location?: string | null
   license?: License
   watermarked?: boolean
+  isAdult?: boolean
   isEditorPick?: boolean
   contestEntries?: {
     id: string
@@ -830,6 +831,36 @@ export function useTrackView() {
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: ["photos", "detail", vars.photoId] })
       qc.invalidateQueries({ queryKey: ["dashboard"] })
+    },
+  })
+}
+
+// ---------- User content preferences (NSFW filter) ----------
+export interface UserPreferences {
+  isAdult: boolean
+  showAdultContent: boolean
+}
+
+export function useUserPreferences() {
+  return useQuery({
+    queryKey: ["user", "preferences"],
+    queryFn: () => jsonFetch<UserPreferences>(`/api/user/preferences`),
+    staleTime: 60_000,
+  })
+}
+
+export function useUpdateUserPreferences() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: Partial<Pick<UserPreferences, "showAdultContent" | "isAdult">>) =>
+      jsonFetch<UserPreferences>(`/api/user/preferences`, {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["user", "preferences"] })
+      // Refetch all photos since the NSFW filter may now show/hide adult content
+      qc.invalidateQueries({ queryKey: ["photos"] })
     },
   })
 }

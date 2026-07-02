@@ -80,6 +80,17 @@ export async function GET(
       return NextResponse.json({ error: "Photo not found" }, { status: 404 })
     }
 
+    // NSFW check: hide adult content from users who haven't opted in
+    // (the photo author can always view their own photo)
+    if (photo.isAdult && currentUser?.id !== photo.author.id) {
+      if (!currentUser || !currentUser.showAdultContent) {
+        return NextResponse.json(
+          { error: "This content is for adults only. Enable NSFW in your profile settings to view it." },
+          { status: 403 }
+        )
+      }
+    }
+
     // Check if the current user follows the photo's author. Query the Follow
     // table directly to avoid the inverted-by-convention relation names.
     const isFollowingAuthor = currentUser
@@ -115,6 +126,7 @@ export async function GET(
       location: photo.location,
       license: photo.license,
       watermarked: photo.watermarked,
+      isAdult: photo.isAdult,
       isEditorPick: photo.isEditorPick,
       pulseScore: photo.pulseScore,
       comments: photo.comments.map((c) => ({

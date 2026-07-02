@@ -29,6 +29,7 @@ const createPhotoSchema = z.object({
     .optional()
     .default("all-rights"),
   watermarked: z.boolean().optional().default(false),
+  isAdult: z.boolean().optional().default(false),
   exif: exifSchema,
 })
 
@@ -64,6 +65,12 @@ export async function GET(req: Request) {
     if (followedIds.length > 0) where.authorId = { in: followedIds }
     if (categoryId) where.categoryId = categoryId
     if (editorPickOnly) where.isEditorPick = true
+
+    // NSFW filter: hide adult content unless the current user explicitly opted in
+    const showAdult = currentUser?.showAdultContent === true
+    if (!showAdult) {
+      where.isAdult = false
+    }
     if (tag) {
       // SQLite is case-insensitive for ASCII by default.
       where.tags = {
@@ -146,6 +153,7 @@ export async function GET(req: Request) {
         location: p.location,
         license: p.license,
         watermarked: p.watermarked,
+        isAdult: p.isAdult,
         isEditorPick: p.isEditorPick,
         pulseScore: p.pulseScore,
         likeCount: p._count.likes,
@@ -194,6 +202,7 @@ export async function POST(req: Request) {
       location,
       license,
       watermarked,
+      isAdult,
       exif,
     } = parsed.data
 
@@ -221,6 +230,7 @@ export async function POST(req: Request) {
         location: location ?? null,
         license,
         watermarked,
+        isAdult,
         tags:
           tags.length > 0
             ? {
@@ -273,6 +283,7 @@ export async function POST(req: Request) {
       location: photo.location,
       license: photo.license,
       watermarked: photo.watermarked,
+      isAdult: photo.isAdult,
       isEditorPick: photo.isEditorPick,
       pulseScore: photo.pulseScore,
       exif: photo.exif,

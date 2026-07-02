@@ -21,6 +21,8 @@ model User {
   location     String?
   websiteUrl   String?
   socialLinks  Json?
+  isAdult      Boolean  @default(false)   // user has verified they are 18+
+  showAdultContent Boolean @default(false) // user wants to see NSFW content
   createdAt    DateTime @default(now())
 
   photos          Photo[]
@@ -63,6 +65,7 @@ model Photo {
   savedIn       SavedPhoto[]
   contestEntries ContestEntry[]
   views         PhotoView[]
+  isAdult       Boolean        @default(false)   // NSFW content, hidden by default
 }
 
 model Tag {
