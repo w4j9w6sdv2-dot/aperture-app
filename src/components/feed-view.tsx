@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useCallback } from "react"
-import { useQuery } from "@tanstack/react-query"
+import { useInfiniteQuery } from "@tanstack/react-query"
 import { motion } from "framer-motion"
 import { Camera, Loader2 } from "lucide-react"
 import { PhotoCard, PhotoCardSkeleton, type Photo } from "@/components/photo-card"
@@ -16,7 +16,7 @@ export function FeedView({ onPhotoClick, onAuthorClick }: FeedViewProps) {
   const t = useT()
   const sentinelRef = useRef<HTMLDivElement>(null)
 
-  const { data, isLoading, isFetching, fetchNextPage, hasNextPage } = useQuery({
+  const { data, isLoading, isFetching, fetchNextPage, hasNextPage } = useInfiniteQuery({
     queryKey: ["photos", "feed"],
     queryFn: async ({ pageParam }: { pageParam?: string }) => {
       const url = pageParam
