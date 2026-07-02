@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useSession, signOut } from "next-auth/react"
-import { Aperture, LogOut, Upload } from "lucide-react"
+import { Aperture, LogOut, Upload, User as UserIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -21,9 +21,10 @@ import { initialsFromName } from "@/lib/utils"
 interface HeaderProps {
   onAuthOpen: (mode: "login" | "signup") => void
   onUploadOpen?: () => void
+  onProfileClick?: () => void
 }
 
-export function Header({ onAuthOpen, onUploadOpen }: HeaderProps) {
+export function Header({ onAuthOpen, onUploadOpen, onProfileClick }: HeaderProps) {
   const t = useT()
   const { data: session } = useSession()
 
@@ -79,6 +80,10 @@ export function Header({ onAuthOpen, onUploadOpen }: HeaderProps) {
                     <span className="text-xs text-muted-foreground font-normal">{session.user.email}</span>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={onProfileClick}>
+                    <UserIcon className="mr-2 h-4 w-4" />
+                    {t("header.profile")}
+                  </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={handleLogout}
                     className="text-[#E60023] focus:text-[#E60023]"

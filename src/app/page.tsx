@@ -9,11 +9,15 @@ import { AuthModal } from "@/components/auth-modal"
 import { UploadModal } from "@/components/upload-modal"
 import { FeedView } from "@/components/feed-view"
 import { PhotoDetailView } from "@/components/photo-detail-view"
+import { ProfileView } from "@/components/profile-view"
 import { Button } from "@/components/ui/button"
 import { useQueryClient } from "@tanstack/react-query"
 import { useT } from "@/lib/i18n"
 
-type View = { name: "home" } | { name: "photo"; photoId: string }
+type View =
+  | { name: "home" }
+  | { name: "photo"; photoId: string }
+  | { name: "profile"; userId: string }
 
 export default function Home() {
   const t = useT()
@@ -38,6 +42,11 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
+  const openProfile = (userId: string) => {
+    setView({ name: "profile", userId })
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
   const goHome = () => setView({ name: "home" })
 
   return (
@@ -45,6 +54,7 @@ export default function Home() {
       <Header
         onAuthOpen={openAuth}
         onUploadOpen={() => setUploadOpen(true)}
+        onProfileClick={() => session?.user?.id && openProfile(session.user.id)}
       />
 
       <main className="flex-1 w-full">
@@ -53,6 +63,13 @@ export default function Home() {
             photoId={view.photoId}
             onBack={goHome}
             onAuthOpen={openAuth}
+            onAuthorClick={openProfile}
+          />
+        ) : view.name === "profile" ? (
+          <ProfileView
+            userId={view.userId}
+            onBack={goHome}
+            onPhotoClick={openPhoto}
           />
         ) : (
           <>
@@ -100,7 +117,7 @@ export default function Home() {
             )}
 
             {/* Feed — always visible */}
-            <FeedView onPhotoClick={openPhoto} />
+            <FeedView onPhotoClick={openPhoto} onAuthorClick={openProfile} />
 
             {/* Compact welcome strip when logged in */}
             {session?.user && (
