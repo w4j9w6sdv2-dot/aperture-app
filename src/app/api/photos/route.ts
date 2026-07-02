@@ -49,11 +49,9 @@ export async function GET(req: Request) {
 
     const currentUser = await getCurrentUser()
 
-    // NSFW filter: hide adult photos unless the current user opted in
-    const showAdult = currentUser?.showAdultContent === true
-    if (!showAdult) {
-      where.isAdult = false
-    }
+    // Adult photos are NEVER shown in the public feed, search, or profiles.
+    // They are only accessible via the Nude category (which has its own NSFW gate).
+    where.isAdult = false
 
     // Sort options: newest, popular, pulse, trending
     const sort = searchParams.get("sort") ?? "newest"

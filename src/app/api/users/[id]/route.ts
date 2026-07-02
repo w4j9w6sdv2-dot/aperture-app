@@ -19,6 +19,7 @@ export async function GET(
         avatarUrl: true,
         createdAt: true,
         photos: {
+          where: { isAdult: false },
           orderBy: { createdAt: "desc" },
           include: {
             _count: { select: { likes: true, comments: true } },

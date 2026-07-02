@@ -5,12 +5,12 @@ import { getCurrentUser } from "@/lib/auth"
 export async function GET() {
   try {
     const currentUser = await getCurrentUser()
-    const showAdult = currentUser?.showAdultContent === true
 
+    // Adult photos are NEVER shown in editor picks or public feeds.
     const photos = await db.photo.findMany({
       where: {
         isEditorPick: true,
-        ...(showAdult ? {} : { isAdult: false }),
+        isAdult: false,
       },
       orderBy: { createdAt: "desc" },
       take: 24,
