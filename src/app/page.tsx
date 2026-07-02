@@ -14,6 +14,8 @@ import { SearchView } from "@/components/search-view"
 import { CategoryView } from "@/components/category-view"
 import { CollectionsView } from "@/components/collections-view"
 import { CollectionDetailView } from "@/components/collection-detail-view"
+import { ContestsView } from "@/components/contests-view"
+import { ContestDetailView } from "@/components/contest-detail-view"
 import { NSFWGate } from "@/components/nsfw-gate"
 import { Button } from "@/components/ui/button"
 import { useQueryClient } from "@tanstack/react-query"
@@ -27,6 +29,8 @@ type View =
   | { name: "category"; slug: string }
   | { name: "collections" }
   | { name: "collection"; collectionId: string }
+  | { name: "contests" }
+  | { name: "contest"; contestId: string }
 
 export default function Home() {
   const t = useT()
@@ -80,6 +84,16 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
+  const openContests = () => {
+    setView({ name: "contests" })
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+  const openContest = (contestId: string) => {
+    setView({ name: "contest", contestId })
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
   const openAdultGate = () => {
     setNsfwGateOpen(true)
   }
@@ -108,6 +122,7 @@ export default function Home() {
         onCategoryClick={openCategory}
         onHomeClick={goHome}
         onCollectionsClick={openCollections}
+        onContestsClick={openContests}
       />
 
       <main className="flex-1 w-full">
@@ -154,6 +169,15 @@ export default function Home() {
             onBack={openCollections}
             onPhotoClick={openPhoto}
             onAuthorClick={openProfile}
+          />
+        ) : view.name === "contests" ? (
+          <ContestsView onContestClick={openContest} />
+        ) : view.name === "contest" ? (
+          <ContestDetailView
+            contestId={view.contestId}
+            onBack={openContests}
+            onPhotoClick={openPhoto}
+            onAuthOpen={openAuth}
           />
         ) : (
           <>

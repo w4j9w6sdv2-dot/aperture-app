@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useSession, signOut } from "next-auth/react"
-import { Aperture, LogOut, Upload, User as UserIcon, Search, X, Compass, FolderOpen } from "lucide-react"
+import { Aperture, LogOut, Upload, User as UserIcon, Search, X, Compass, FolderOpen, Trophy } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -29,9 +29,10 @@ interface HeaderProps {
   onCategoryClick?: (slug: string) => void
   onHomeClick?: () => void
   onCollectionsClick?: () => void
+  onContestsClick?: () => void
 }
 
-export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch, onCategoryClick, onHomeClick, onCollectionsClick }: HeaderProps) {
+export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch, onCategoryClick, onHomeClick, onCollectionsClick, onContestsClick }: HeaderProps) {
   const t = useT()
   const { data: session } = useSession()
   const [searchQuery, setSearchQuery] = useState("")
@@ -137,6 +138,17 @@ export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch, onC
             <span>{t("collection.title")}</span>
           </Button>
         )}
+
+        {/* Contests (desktop) */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onContestsClick}
+          className="hidden sm:inline-flex gap-1.5 text-muted-foreground hover:text-foreground"
+        >
+          <Trophy className="h-4 w-4" />
+          <span>{t("contest.title")}</span>
+        </Button>
 
         {/* Right actions */}
         <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">

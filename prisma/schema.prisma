@@ -25,6 +25,8 @@ model User {
   comments Comment[]
   likes    Like[]
   collections Collection[]
+  contestEntries ContestEntry[]
+  contestVotes   ContestVote[]
 }
 
 model Photo {
@@ -43,6 +45,7 @@ model Photo {
   likes    Like[]
   category Category?      @relation(fields: [categoryId], references: [id])
   savedIn  SavedPhoto[]
+  contestEntries ContestEntry[]
 }
 
 model Category {
@@ -118,5 +121,50 @@ model SavedPhoto {
   photo      Photo       @relation(fields: [photoId], references: [id], onDelete: Cascade)
 
   @@unique([collectionId, photoId])
+}
+
+model Contest {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  theme       String
+  prize       String?
+  startsAt    DateTime
+  endsAt      DateTime
+  status      String   @default("active")
+  bannerUrl   String?
+  createdAt   DateTime @default(now())
+
+  entries ContestEntry[]
+  votes   ContestVote[]
+}
+
+model ContestEntry {
+  id        String   @id @default(cuid())
+  contestId String
+  photoId   String
+  userId    String
+  createdAt DateTime @default(now())
+
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  photo   Photo   @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  votes   ContestVote[]
+
+  @@unique([contestId, photoId])
+}
+
+model ContestVote {
+  id        String   @id @default(cuid())
+  contestId String
+  entryId   String
+  userId    String
+  createdAt DateTime @default(now())
+
+  contest Contest      @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  entry   ContestEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, userId])
 }
 
