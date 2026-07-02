@@ -2,8 +2,9 @@
 
 import { useState } from "react"
 import { useSession, signOut } from "next-auth/react"
-import { Aperture, LogOut, Upload, User as UserIcon } from "lucide-react"
+import { Aperture, LogOut, Upload, User as UserIcon, Search, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,16 +23,27 @@ interface HeaderProps {
   onAuthOpen: (mode: "login" | "signup") => void
   onUploadOpen?: () => void
   onProfileClick?: () => void
+  onSearch?: (query: string) => void
 }
 
-export function Header({ onAuthOpen, onUploadOpen, onProfileClick }: HeaderProps) {
+export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch }: HeaderProps) {
   const t = useT()
   const { data: session } = useSession()
+  const [searchQuery, setSearchQuery] = useState("")
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
 
   const handleLogout = () => {
     signOut({ redirect: false }).then(() => {
       toast.success(t("toast.loggedOut"))
     })
+  }
+
+  const submitSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    const q = searchQuery.trim()
+    if (!q) return
+    onSearch?.(q)
+    setMobileSearchOpen(false)
   }
 
   return (
@@ -45,8 +57,40 @@ export function Header({ onAuthOpen, onUploadOpen, onProfileClick }: HeaderProps
           <span className="text-xl font-bold tracking-tight">Aperture</span>
         </div>
 
+        {/* Desktop search */}
+        <form onSubmit={submitSearch} className="hidden sm:flex flex-1 max-w-xl items-center relative">
+          <Search className="absolute left-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={t("header.searchPlaceholder")}
+            className="pl-9 pr-9 h-10 bg-muted/40 border-border/60 focus-visible:bg-background focus-visible:border-[#E60023]/50 rounded-full"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </form>
+
         {/* Right actions */}
         <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
+          {/* Mobile search toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="sm:hidden"
+            onClick={() => setMobileSearchOpen((v) => !v)}
+            aria-label="Toggle search"
+          >
+            {mobileSearchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
+          </Button>
+
           <LanguageSwitcher />
 
           {session?.user ? (
@@ -115,6 +159,23 @@ export function Header({ onAuthOpen, onUploadOpen, onProfileClick }: HeaderProps
           )}
         </div>
       </div>
+
+      {/* Mobile search dropdown */}
+      {mobileSearchOpen && (
+        <div className="sm:hidden border-t border-border/60 px-4 py-3">
+          <form onSubmit={submitSearch} className="flex items-center relative">
+            <Search className="absolute left-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t("header.searchPlaceholder")}
+              className="pl-9 pr-9 h-10 bg-muted/40 rounded-full"
+              autoFocus
+            />
+          </form>
+        </div>
+      )}
     </header>
   )
 }

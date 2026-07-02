@@ -20,6 +20,16 @@ export async function GET(req: Request) {
     const where: Record<string, unknown> = {}
     if (authorId) where.authorId = authorId
 
+    const search = searchParams.get("search")
+    if (search) {
+      where.OR = [
+        { title: { contains: search } },
+        { description: { contains: search } },
+        { tags: { some: { tag: { name: { contains: search } } } } },
+        { author: { username: { contains: search } } },
+      ]
+    }
+
     const currentUser = await getCurrentUser()
 
     const photos = await db.photo.findMany({

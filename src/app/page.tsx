@@ -10,6 +10,7 @@ import { UploadModal } from "@/components/upload-modal"
 import { FeedView } from "@/components/feed-view"
 import { PhotoDetailView } from "@/components/photo-detail-view"
 import { ProfileView } from "@/components/profile-view"
+import { SearchView } from "@/components/search-view"
 import { Button } from "@/components/ui/button"
 import { useQueryClient } from "@tanstack/react-query"
 import { useT } from "@/lib/i18n"
@@ -18,6 +19,7 @@ type View =
   | { name: "home" }
   | { name: "photo"; photoId: string }
   | { name: "profile"; userId: string }
+  | { name: "search"; query: string }
 
 export default function Home() {
   const t = useT()
@@ -27,6 +29,7 @@ export default function Home() {
   const [authMode, setAuthMode] = useState<"login" | "signup">("signup")
   const [uploadOpen, setUploadOpen] = useState(false)
   const [view, setView] = useState<View>({ name: "home" })
+  const [searchQuery, setSearchQuery] = useState("")
 
   const openAuth = (mode: "login" | "signup") => {
     setAuthMode(mode)
@@ -47,7 +50,16 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
-  const goHome = () => setView({ name: "home" })
+  const openSearch = (query: string) => {
+    setSearchQuery(query)
+    setView({ name: "search", query })
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+  const goHome = () => {
+    setView({ name: "home" })
+    setSearchQuery("")
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -55,6 +67,7 @@ export default function Home() {
         onAuthOpen={openAuth}
         onUploadOpen={() => setUploadOpen(true)}
         onProfileClick={() => session?.user?.id && openProfile(session.user.id)}
+        onSearch={openSearch}
       />
 
       <main className="flex-1 w-full">
@@ -70,6 +83,20 @@ export default function Home() {
             userId={view.userId}
             onBack={goHome}
             onPhotoClick={openPhoto}
+          />
+        ) : view.name === "search" ? (
+          <SearchView
+            query={searchQuery}
+            onQueryChange={(q) => {
+              setSearchQuery(q)
+              if (q.trim()) {
+                setView({ name: "search", query: q })
+              } else {
+                goHome()
+              }
+            }}
+            onPhotoClick={openPhoto}
+            onAuthorClick={openProfile}
           />
         ) : (
           <>
