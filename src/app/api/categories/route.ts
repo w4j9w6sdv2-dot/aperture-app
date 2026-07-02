@@ -5,14 +5,14 @@ export const dynamic = "force-dynamic"
 
 export async function GET() {
   try {
-    // Show ALL categories (including adult) so users can see them in the menu.
-    // The NSFW gate triggers when they click on an adult category.
-    const categories = await db.category.findMany({
-      orderBy: { name: "asc" },
-      include: {
-        _count: { select: { photos: true } },
-      },
-    })
+    // Use raw SQL to bypass any Prisma Client caching issues
+    const categories = await db.$queryRaw`
+      SELECT c.id, c.name, c.slug, c.icon, c."isAdult", COALESCE(p.cnt, 0) as "photoCount"
+      FROM "Category" c
+      LEFT JOIN (SELECT "categoryId", COUNT(*) as cnt FROM "Photo" WHERE "categoryId" IS NOT NULL GROUP BY "categoryId") p
+      ON c.id = p."categoryId"
+      ORDER BY c.name ASC
+    ` as Array<{ id: string; name: string; slug: string; icon: string | null; isAdult: boolean; photoCount: bigint }>
 
     return NextResponse.json({
       items: categories.map((c) => ({
@@ -21,7 +21,7 @@ export async function GET() {
         slug: c.slug,
         icon: c.icon,
         isAdult: c.isAdult,
-        photoCount: c._count.photos,
+        photoCount: Number(c.photoCount),
       })),
     })
   } catch (err) {
