@@ -16,21 +16,30 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Aperture — Dove i fotografi prendono vita",
+  title: "Aperture — Where photographers come alive",
   description:
-    "Aperture \u00e8 una community per fotografi per condividere il loro lavoro, scoprire foto inspiranti, seguire creatori e interagire tramite like e commenti. Dove i fotografi prendono vita.",
+    "Aperture is a free photography community platform. Share your photos, discover inspiring work, follow photographers, enter contests, and more. Built by Adriano Boca for everyone.",
   keywords: [
-    "fotografia",
-    "Aperture",
-    "community fotografica",
-    "fotografia professionale",
-    "scopri foto",
-    "fotografi",
+    "photography", "Aperture", "photo community", "photo sharing",
+    "fotografia", "community fotografica", "professional photography",
+    "discover photos", "photographers", "photo contests", "free photo platform",
   ],
-  authors: [{ name: "Aperture" }],
-  icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+  authors: [{ name: "Adriano Boca" }],
+  creator: "Adriano Boca",
+  openGraph: {
+    title: "Aperture — Where photographers come alive",
+    description: "Free photography community. Share, discover, compete. Built by Adriano Boca.",
+    type: "website",
+    locale: "it_IT",
+    siteName: "Aperture",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Aperture — Where photographers come alive",
+    description: "Free photography community. Share, discover, compete.",
+  },
+  robots: { index: true, follow: true },
+  alternates: { canonical: "https://aperture-photo.vercel.app" },
 };
 
 export default function RootLayout({
@@ -39,7 +48,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="it" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >

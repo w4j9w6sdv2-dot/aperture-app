@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { LanguageSwitcher } from "@/components/language-switcher"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { useT } from "@/lib/i18n"
 import { toast } from "sonner"
 import { initialsFromName } from "@/lib/utils"
@@ -204,6 +205,7 @@ export function Header({ onAuthOpen, onUploadOpen, onProfileClick, onSearch, onC
           </Button>
 
           <LanguageSwitcher />
+          <ThemeToggle />
 
           {/* Notifications bell (logged in only) */}
           {session?.user && (

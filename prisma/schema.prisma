@@ -31,6 +31,8 @@ model User {
   following Follow[] @relation("Followers")
   views    PhotoView[]
   notifications Notification[]
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
 }
 
 model Photo {
@@ -42,6 +44,10 @@ model Photo {
   isAdult      Boolean  @default(false)
   isEditorPick Boolean  @default(false)
   categoryId   String?
+  license      String   @default("all-rights")
+  watermarked  Boolean  @default(false)
+  location     String?
+  pulseScore   Int      @default(0)
   createdAt    DateTime @default(now())
 
   author   User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
@@ -52,6 +58,21 @@ model Photo {
   savedIn  SavedPhoto[]
   contestEntries ContestEntry[]
   views    PhotoView[]
+  exif     PhotoExif?
+}
+
+model PhotoExif {
+  id           String   @id @default(cuid())
+  photoId      String   @unique
+  camera       String?
+  lens         String?
+  focalLength  String?
+  aperture     String?
+  shutterSpeed String?
+  iso          String?
+  takenAt      DateTime?
+
+  photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
 }
 
 model Category {
@@ -206,6 +227,18 @@ model Notification {
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  body       String
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  sender   User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
 }
 
 

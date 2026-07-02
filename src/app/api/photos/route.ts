@@ -10,6 +10,18 @@ const createPhotoSchema = z.object({
   tags: z.array(z.string()).optional(),
   categoryId: z.string().optional().nullable(),
   isAdult: z.boolean().optional().default(false),
+  license: z.enum(["cc0", "cc-by", "cc-by-nc", "all-rights"]).optional().default("all-rights"),
+  watermarked: z.boolean().optional().default(false),
+  location: z.string().max(200).optional().nullable(),
+  exif: z.object({
+    camera: z.string().optional().nullable(),
+    lens: z.string().optional().nullable(),
+    focalLength: z.string().optional().nullable(),
+    aperture: z.string().optional().nullable(),
+    shutterSpeed: z.string().optional().nullable(),
+    iso: z.string().optional().nullable(),
+    takenAt: z.string().optional().nullable(),
+  }).optional().nullable(),
 })
 
 export async function GET(req: Request) {
@@ -43,9 +55,21 @@ export async function GET(req: Request) {
       where.isAdult = false
     }
 
+    // Sort options: newest, popular, pulse, trending
+    const sort = searchParams.get("sort") ?? "newest"
+    let orderBy: Record<string, unknown> = { createdAt: "desc" as const }
+    if (sort === "popular") orderBy = { likes: { _count: "desc" as const } }
+    else if (sort === "pulse") orderBy = { pulseScore: "desc" as const }
+    else if (sort === "trending") {
+      const sevenDaysAgo = new Date()
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+      where.createdAt = { gte: sevenDaysAgo }
+      orderBy = { pulseScore: "desc" as const }
+    }
+
     const photos = await db.photo.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      orderBy,
       take: take + 1,
       ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
       include: {
@@ -109,7 +133,7 @@ export async function POST(req: Request) {
       )
     }
 
-    const { title, description, imageUrl, tags = [], categoryId, isAdult } = parsed.data
+    const { title, description, imageUrl, tags = [], categoryId, isAdult, license, watermarked, location, exif } = parsed.data
 
     const photo = await db.photo.create({
       data: {
@@ -119,6 +143,9 @@ export async function POST(req: Request) {
         authorId: currentUser.id,
         categoryId: categoryId ?? null,
         isAdult,
+        license,
+        watermarked,
+        location: location ?? null,
         tags:
           tags.length > 0
             ? {
@@ -134,11 +161,23 @@ export async function POST(req: Request) {
                 ),
               }
             : undefined,
+        exif: exif ? {
+          create: {
+            camera: exif.camera ?? null,
+            lens: exif.lens ?? null,
+            focalLength: exif.focalLength ?? null,
+            aperture: exif.aperture ?? null,
+            shutterSpeed: exif.shutterSpeed ?? null,
+            iso: exif.iso ?? null,
+            takenAt: exif.takenAt ? new Date(exif.takenAt) : null,
+          },
+        } : undefined,
       },
       include: {
         author: { select: { id: true, username: true, avatarUrl: true } },
         tags: { include: { tag: true } },
         category: { select: { id: true, name: true, slug: true, icon: true, isAdult: true } },
+        exif: true,
       },
     })
 
